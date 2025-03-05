@@ -1,24 +1,42 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary-text: #101828;
+  --dark-text: #e8e9ea;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.player-card-bg {
+  background-image: url('/front-end-sorteio/src/constants/icons/sky.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.custom-bg {
+  color: var(--primary-text);
+}
+
+.custom-text {
+  color: var(--primary-text);
+}
+
+.dark .custom-bg {
+  color: var(--dark-text);
+}
+
+.dark .custom-text {
+  color: var(--dark-text);
+}
+
+@media screen and (min-width: 1024px) and (max-width: 1357.98px) {
+  .custom-gap-responsive {
+    gap: 1.5rem; /* Ajuste o valor conforme necessário */
   }
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  
+  /* Se precisar ajustar apenas o gap entre elementos específicos */
+  .custom-gap-responsive > .text-container {
+    margin-right: 1.5rem; /* Exemplo alternativo */
+  }
 }
