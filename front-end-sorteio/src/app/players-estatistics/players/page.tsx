@@ -40,7 +40,7 @@ export default function Players() {
           }}
         >
           {allPlayers.map((player: Player) => (
-            <div key={player.id} className="px-1">
+            <div key={player.id} className="px-3">
               <PlayerCard
                 matchs={player.matchs}
                 name={player.name}

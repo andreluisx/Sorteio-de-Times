@@ -4,6 +4,7 @@ import { server } from '@/api/server';
 import Player from '@/types/playerType';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { toast } from 'react-toastify';
+import { MatchType } from './matchs';
 
 type PlayersState = {
   playersData: Player[];
@@ -14,6 +15,7 @@ type PlayersState = {
   error: string | null;
   stars: number;
   name: string;
+  playerMatchs: MatchType[];
 };
 
 type PlayersActions = {
@@ -46,6 +48,7 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
     stars: 0,
     name: '',
     allPlayers: [],
+    playerMatchs: [],
 
     fetchPlayers: async () => {
       set({ isLoading: true, error: null });
@@ -89,7 +92,12 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        set({ player: response.data, isLoading: false });
+        const response_matchs = await server.get(`/match/history-player/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log(response_matchs.data)
+
+        set({ player: response.data, playerMatchs: response_matchs.data, isLoading: false });
       } catch (error) {
         console.error('Erro ao carregar o player:', error);
         set({ error: 'Erro ao carregar o player', isLoading: false });

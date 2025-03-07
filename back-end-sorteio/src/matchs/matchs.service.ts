@@ -441,4 +441,56 @@ export class MatchsService {
       throw new Error(e);
     }
   }
+
+  async PlayerMatchs(id: string) {
+    try {
+      const matches = await this.matchsRepository
+        .createQueryBuilder('match')
+        .innerJoinAndSelect('match.teamPlayers', 'teamPlayer') // Carrega todos os TeamPlayers
+        .innerJoinAndSelect('teamPlayer.player', 'player') // Carrega todos os Players
+        .leftJoinAndSelect('match.teamPlayers', 'allTeamPlayers') // Carrega todos os TeamPlayers novamente
+        .leftJoinAndSelect('allTeamPlayers.player', 'allPlayers') // Carrega todos os Players novamente
+        .where('player.id = :id', { id })
+        .orderBy('match', 'DESC') // Filtra as partidas em que o jogador participa
+        .getMany();
+  
+      // Estrutura os dados para incluir team1, team2 e userWon
+      return matches.map(match => {
+        const team1 = match.teamPlayers
+          .filter(tp => tp.teamNumber === 1) // Filtra os jogadores do time 1
+          .map(tp => tp.player); // Extrai os jogadores
+  
+        const team2 = match.teamPlayers
+          .filter(tp => tp.teamNumber === 2) // Filtra os jogadores do time 2
+          .map(tp => tp.player); // Extrai os jogadores
+  
+        // Verifica se o usuário ganhou a partida
+        let playerWon = 0
+        const userTeam = match.teamPlayers.find(tp => tp.player.id === id)?.teamNumber;
+        if(match.winner === 0){
+          playerWon = 0
+        }
+        else if(userTeam === match.winner){
+          playerWon = 1
+        }
+        else if(userTeam !== match.winner && match.winner !== 0){
+          playerWon = 2
+        }
+  
+        return {
+          id: match.id,
+          winner: match.winner,
+          matchTime: match.matchTime,
+          createdAt: match.createdAt,
+          updatedAt: match.updatedAt,
+          team1, // Time 1 com os jogadores
+          team2, // Time 2 com os jogadores
+          playerWon, // true se o usuário ganhou, false caso contrário
+        };
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
 }

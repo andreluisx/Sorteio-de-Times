@@ -5,19 +5,24 @@ import { RankRender } from '@/utils/RanksRender';
 import { usePlayersStore } from '@/store/players';
 import StarIcon from '@mui/icons-material/Star';
 import { useParams } from 'next/navigation';
+import MatchHistory from './MatchHistory';
 
 const winRateRender = (winRate: number | undefined) => {
-  if (winRate === 0 || !winRate) {
-    return <h1 className="text-md text-slate-200">Taxa de vitórias: 0%</h1>;
+  if (!winRate) {
+    <p className="text-slate-400 flex flex-row gap-2">
+      Partidas jogadas: <p className='text-slate-200'>{winRate}%</p>
+    </p>
   }
   return (
-    <h1 className="text-md text-slate-200">Taxa de vitórias: {winRate}%</h1>
+    <p className="text-slate-400 flex flex-row gap-2">
+      Partidas jogadas: <p className='text-slate-200'>{winRate}%</p>
+    </p>
   );
 };
 
 export default function PlayerPage() {
   const { id } = useParams();
-  const { player, fetchPlayer, isLoading, clearPlayer } = usePlayersStore();
+  const { player, fetchPlayer, isLoading, clearPlayer, playerMatchs } = usePlayersStore();
   const [isMounted, setIsMounted] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [editedStars, setEditedStars] = useState(0);
@@ -87,6 +92,7 @@ export default function PlayerPage() {
 
   const handleSave = () => {
     updatePlayer(player.id, editedName, editedStars);
+    setIsEditing(false)
   };
 
   const handleStarsChange = (
@@ -99,13 +105,13 @@ export default function PlayerPage() {
   };
 
   return (
-    <div className="flex w-full justify-center items-start p-6">
+    <div className="flex flex-col gap-5 lg:flex-row w-full justify-center items-start p-6">
       <div className="flex flex-col w-full lg:w-fit p-6 bg-slate-900 rounded-lg border border-slate-600">
         <div className="flex w-full flex-row">
-          <div className="max-w-46 flex w-1/3 justify-center items-center">
+          <div className="max-w-46 flex w-1/2 justify-center items-center">
             <RankRender rank={player.rank} />
           </div>
-          <div className="justify-center items-start w-2/3 pl-9 flex flex-col flex-wrap">
+          <div className="justify-start items-start w-2/3 pl-9 flex flex-col flex-wrap">
             <div className="flex flex-row flex-wrap justify-end items-center gap-1">
               {isEditing ? (
                 <input
@@ -121,7 +127,7 @@ export default function PlayerPage() {
                   autoFocus
                 />
               ) : (
-                <h1 className="text-3xl lg:text-5xl pb-3 break-words overflow-hidden">
+                <h1 className="text-3xl lg:text-5xl text-left pb-3 break-words overflow-hidden">
                   {editedName}
                 </h1>
               )}
@@ -138,14 +144,18 @@ export default function PlayerPage() {
             </div>
             <div className="flex gap-1 flex-col text-sm lg:text-md">
               {winRateRender(player.winRate)}
-              <p className="text-slate-200">
-                Partidas jogadas: {player.matchs}
+              <p className="text-slate-400 flex flex-row gap-2">
+                Partidas jogadas: <p className='text-slate-200'>{player.matchs}</p>
               </p>
-              <p className="text-slate-200">Partidas ganhas: {player.wins}</p>
-              <p className="text-slate-200">
-                Partidas perdidas: {player.loses}
+              <p className="text-slate-400 flex flex-row gap-2">
+                Partidas ganhas: <p className='text-slate-200'>{player.wins}</p>
               </p>
-              <p className="text-slate-200">Estrelas: {editedStars}</p>
+              <p className="text-slate-400 flex flex-row gap-2">
+                Partidas perdidas: <p className='text-slate-200'>{player.loses}</p>
+              </p>
+              <p className="text-slate-400 flex flex-row gap-2">
+                Estrelas: <p className='text-slate-200'>{editedStars}</p>
+              </p>
             </div>
           </div>
         </div>
@@ -180,8 +190,13 @@ export default function PlayerPage() {
               'Salvar Edição'
             )}
           </button>
+          <button className='text-red-600 cursor-pointer'>Deletar Jogador</button>
         </div>
       </div>
+        <div className='flex w-full h-full lg:w-1/2 flex-col border border-slate-600 rounded-md'>
+            <h1 className='text-2xl justify-center items-start p-2 flex w-full'>Histórico</h1>
+            <MatchHistory matchs={playerMatchs}/>
+        </div>
     </div>
   );
 }

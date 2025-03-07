@@ -5,16 +5,7 @@ import { toast } from 'react-toastify';
 import Player from '@/types/playerType';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
-interface AllMatchsType {
-  createdAt: string;
-  id: number;
-  matchTime: number;
-  team1: Player[];
-  team2: Player[];
-  winner: number;
-}
-
-interface MatchType {
+export interface MatchType {
   createdAt: string;
   id: number;
   matchTime: number;
@@ -37,7 +28,7 @@ type State = {
   pathName: string;
   match: MatchType;
   winnerTeam: WinnerType;
-  allMatchs: AllMatchsType[];
+  allMatchs: MatchType[];
 };
 
 type Actions = {

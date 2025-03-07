@@ -1,6 +1,5 @@
 'use client';
 import { useMatchsStore } from '@/store/matchs';
-import { useEffect, useState } from 'react';
 import TimeConvert from './TimeConvert';
 import { useRouter } from 'next/navigation';
 import { CircularProgress } from '@mui/material';
@@ -21,23 +20,12 @@ const formatDate = (dateString: string) => {
   return dateString;
 };
 
-export default function MatchHistory() {
-  const { getAllMatchs, allMatchs, isLoading } = useMatchsStore();
-  const [isMounted, setIsMounted] = useState(false);
+export default function MatchHistory({matchs}) {
+  const { isLoading } = useMatchsStore();
   const router = useRouter();
 
   const handleMatchClick = (id: number) => {
     router.push(`/matchs/${id}`)
-  }
-
-  useEffect(() => {
-    getAllMatchs();
-    setIsMounted(true);
-  }, [getAllMatchs]);
-
-  // Prevent rendering on server
-  if (!isMounted) {
-    return null;
   }
 
   if (isLoading) {
@@ -46,6 +34,51 @@ export default function MatchHistory() {
           <CircularProgress size={35} title="Loading..." color="inherit" />
       </div>
     );
+  }
+
+  const borderResult = (match)=>{
+    if(!match){
+      return ''
+    }
+    else if(match.playerWon === 1){
+      return 'border border-green-800'
+    }
+    else if(match.playerWon === 2){
+      return 'border border-red-800'
+    }
+    else if(match.playerWon === 0){
+      return 'border border-yellow-800'
+    }
+  }
+
+  const TextResult = (match)=>{
+    if(!match.playerWon){
+      return `Vencedor: Time ${match.winner}`
+    }
+    if(match.playerWon === 1){
+      return 'Vitória'
+    }
+    else if(match.playerWon === 2){
+      return 'Derrota'
+    }
+    else if(match.playerWon === 0){
+      return 'Não Finalizado'
+    }
+  }
+
+  const textResultColor = (match) => {
+    if(!match.playerWon){
+      return `text-green-500`
+    }
+    if(match.playerWon === 1){
+      return 'text-green-700'
+    }
+    else if(match.playerWon === 2){
+      return 'text-red-700'
+    }
+    else if(match.playerWon === 0){
+      return 'text-yellow-500'
+    }
   }
   
 
@@ -58,10 +91,10 @@ export default function MatchHistory() {
         scrollbarColor: '#4B5563 #1F2937',
       }}
     >
-      {allMatchs.map((match) => (
+      {matchs.map((match) => (
         <div 
           key={match.id} 
-          className="bg-slate-800 rounded-lg shadow-md cursor-pointer"
+          className={`bg-slate-800 rounded-t-lg shadow-md cursor-pointer ${borderResult(match)}`}
           onClick={()=>handleMatchClick(match.id)}
         >
           <div className="px-6 py-4 border-b border-slate-700">
@@ -81,8 +114,8 @@ export default function MatchHistory() {
                   </div>
                 </div>
               </div>
-              <div className="text-right text-green-500 font-semibold">
-                {!match.winner ? '' : `Vencedor: Time ${match.winner}`}
+              <div className={`text-right ${textResultColor(match)} font-semibold`}>
+                {TextResult(match)}
               </div>
             </div>
           </div>

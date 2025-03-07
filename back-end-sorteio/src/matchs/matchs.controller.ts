@@ -82,4 +82,10 @@ export class MatchsController {
       randomMatchDto,
     );
   }
+
+  @Get('history-player/:id')
+  PlayerMatchs(@Param('id') id : string) {
+    return this.matchsService.PlayerMatchs(id);
+  }
+
 }

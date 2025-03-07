@@ -9,6 +9,7 @@ import { useParams } from 'next/navigation';
 import { CircularProgress } from '@mui/material';
 
 export default function MatchScreen() {
+  
   const { match, setWinner, deleteMatch, getMatch, isLoading } =
     useMatchsStore();
   const router = useRouter();
