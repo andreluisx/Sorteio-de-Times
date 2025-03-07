@@ -10,12 +10,12 @@ import MatchHistory from './MatchHistory';
 const winRateRender = (winRate: number | undefined) => {
   if (!winRate) {
     <p className="text-slate-400 flex flex-row gap-2">
-      Partidas jogadas: <p className='text-slate-200'>{winRate}%</p>
+      Taxa de vitórias: <p className='text-slate-200'>{winRate}%</p>
     </p>
   }
   return (
     <p className="text-slate-400 flex flex-row gap-2">
-      Partidas jogadas: <p className='text-slate-200'>{winRate}%</p>
+      Taxa de vitórias: <p className='text-slate-200'>{winRate}%</p>
     </p>
   );
 };
@@ -148,10 +148,10 @@ export default function PlayerPage() {
                 Partidas jogadas: <p className='text-slate-200'>{player.matchs}</p>
               </p>
               <p className="text-slate-400 flex flex-row gap-2">
-                Partidas ganhas: <p className='text-slate-200'>{player.wins}</p>
+                Vitórias: <p className='text-slate-200'>{player.wins}</p>
               </p>
               <p className="text-slate-400 flex flex-row gap-2">
-                Partidas perdidas: <p className='text-slate-200'>{player.loses}</p>
+                Derrotas: <p className='text-slate-200'>{player.loses}</p>
               </p>
               <p className="text-slate-400 flex flex-row gap-2">
                 Estrelas: <p className='text-slate-200'>{editedStars}</p>
