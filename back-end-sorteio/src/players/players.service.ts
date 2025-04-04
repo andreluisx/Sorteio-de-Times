@@ -2,6 +2,7 @@ import {
   Delete,
   Get,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   Patch,
   Post,
@@ -14,6 +15,8 @@ import { Players } from './entities/player.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { v4 as uuid } from 'uuid';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import { date } from 'joi';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class PlayersService {
@@ -44,7 +47,8 @@ export class PlayersService {
 
     const query = this.playersRepository
       .createQueryBuilder('player')
-      .where('player.userId = :userId', { userId });
+      .where('player.userId = :userId', { userId })
+      .andWhere('player.deleted_at IS NULL');
 
     if (name) {
       query.andWhere('LOWER(player.name) LIKE LOWER(:name)', {
@@ -64,6 +68,7 @@ export class PlayersService {
         wins: player.wins,
         loses: player.loses,
         matchs: player.matchs,
+        idealStar: player.idealStar,
         isActive: player.isActive,
         createdAt: player.createdAt,
       };
@@ -72,23 +77,23 @@ export class PlayersService {
     return allPlayers;
   }
 
-  @Get(':id')
   async findOne(id: string) {
-    const player = await this.playersRepository.findOneBy({ id: id });
+    const player = await this.playersRepository.findOne({
+      where: { id, deleted_at: null },
+    });
 
     if (!player) {
       throw new NotFoundException('Player não encontrado.');
     }
-   
+
     return {
       ...player,
       winRate: Math.ceil(player.winRate),
       rank: player.rank,
-      matchs: player.matchs
+      matchs: player.matchs,
     };
   }
 
-  @Patch(':id')
   async update(id: string, updatePlayerDto: UpdatePlayerDto) {
     const player = await this.playersRepository.findOne({ where: { id } });
 
@@ -103,7 +108,7 @@ export class PlayersService {
       updatePlayerDto?.isActive === undefined
         ? player.isActive
         : Boolean(updatePlayerDto.isActive);
-        
+
     const playersDatas = await this.playersRepository.save(player);
 
     return {
@@ -111,16 +116,97 @@ export class PlayersService {
       winRate: Math.ceil(playersDatas.winRate),
       rank: playersDatas.rank,
       matchs: playersDatas.matchs,
+    };
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    try {
+      const player = await this.playersRepository.findOne({ where: { id } });
+
+      if (!player) {
+        throw new NotFoundException('Jogador não encontrado.');
+      }
+
+      player.deleted_at = new Date(); // Marca como deletado (soft delete)
+      await this.playersRepository.save(player);
+
+      return { message: 'Jogador marcado como deletado.' };
+    } catch (error) {
+      console.error('Erro ao deletar jogador:', error);
+      throw new InternalServerErrorException(
+        'Erro ao tentar deletar o jogador.',
+      );
     }
   }
 
-  @Delete()
-  async remove(id: string) {
-    const player = await this.playersRepository.findOne({ where: { id } });
+  async betterBalancedPlayers(token: TokenPayloadDto) {
+    const allPlayers = await this.playersRepository.find({
+      where: { userId: token.sub },
+    });
+    const betterBalanced = allPlayers
+      .filter((player) => {
+        const difference = Math.abs(player.idealStar - player.stars);
+        return difference <= 1;
+      })
+      .map((player) => {
+        return {
+          ...player,
+          matchs: player.matchs,
+          winRate: Math.ceil(player.winRate),
+          idealStar: player.idealStar,
+        };
+      });
+    const balanced = allPlayers
+      .filter((player) => {
+        const difference = Math.abs(player.idealStar - player.stars);
+        return difference <= 3;
+      })
+      .map((player) => {
+        return {
+          ...player,
+          matchs: player.matchs,
+          winRate: Math.ceil(player.winRate),
+          idealStar: player.idealStar,
+        };
+      });
 
-    if (!player) {
-      throw new NotFoundException('Player não encontrado.');
-    }
-    return await this.playersRepository.remove(player);
+    const worstBalanced = allPlayers
+      .filter((player) => {
+        const difference = Math.abs(player.idealStar - player.stars);
+        return difference > 3;
+      })
+      .map((player) => {
+        return {
+          ...player,
+          matchs: player.matchs,
+          winRate: Math.ceil(player.winRate),
+          idealStar: player.idealStar,
+        };
+      });
+
+    return { betterBalanced, balanced, worstBalanced };
+  }
+
+  async betterPlayers(token: TokenPayloadDto) {
+    const allPlayers = await this.playersRepository.find({
+      where: { userId: token.sub, deleted_at: null },
+    });
+
+    const betterPlayers = allPlayers
+      .sort((a, b) => b.winRate - a.winRate)
+      .slice(0, 5)
+      .map((player) => {
+        return {
+          id: player.id,
+          name: player.name,
+          stars: player.stars,
+          wins: player.wins,
+          loses: player.loses,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
+      });
+
+    return { betterPlayers };
   }
 }

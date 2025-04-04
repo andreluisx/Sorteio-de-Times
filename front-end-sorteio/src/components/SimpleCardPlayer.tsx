@@ -11,11 +11,11 @@ interface PlayerCardProps {
 const winRateRender = (winRate: number | undefined, matchs: number) => {
   
   if(winRate === 0){
-    return <p className='text-sm overflow-hidden flex-wrap text-gray-700 dark:text-gray-300'>{winRate}% de vitórias em {matchs} partidas</p>
+    return <p className='text-sm overflow-hidden flex-wrap text-gray-300'>{winRate}% de vitórias em {matchs} partidas</p>
   } else if(!winRate) {
     return null
   }
-  return <p className='text-sm overflow-hidden flex-wrap text-gray-700 dark:text-gray-300'>{winRate}% de vitórias em {matchs} partidas</p>
+  return <p className='text-sm overflow-hidden flex-wrap text-gray-300'>{winRate}% de vitórias em {matchs} partidas</p>
 
 }
 

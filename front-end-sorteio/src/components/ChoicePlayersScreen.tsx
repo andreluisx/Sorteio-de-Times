@@ -20,10 +20,13 @@ const TeamSection = (
   handlePlayer: (player: Player) => void
 ) => (
   <div
-    className={`w-full flex-col z-30 flex min-h-96 lg:min-h-28 bg-gradient-to-b from-slate-700 to-slate-800 dark:from-slate-600 dark:to-slate-700 rounded-lg border border-slate-600`}
+    className={`w-full flex-col z-30 flex min-h-28 lg:min-h-28 bg-gradient-to-b from-slate-700 to-slate-800 dark:from-slate-600 dark:to-slate-700 rounded-lg border border-slate-600`}
   >
-    <div className="bg-slate-900 rounded-t-lg p-3 border-b border-slate-600">
+    <div className="bg-slate-900 flex flex-row justify-between items-center rounded-t-lg p-3 border-b border-slate-600">
+      <p className='text-sm'>banco: {players.length}</p>
       <h2 className="text-center text-xl font-bold text-white">Jogadores</h2>
+      <div className='w-14'></div>
+      
     </div>
     <div
       className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3 overflow-y-auto"
@@ -33,18 +36,26 @@ const TeamSection = (
         scrollbarColor: '#4B5563 #1F2937',
       }}
     >
-      {players.map((player) => (
-        <div key={player.id}>
-          <PlayerCard
-            rank={player.rank}
-            matchs={player.matchs}
-            name={player.name}
-            stars={player.stars}
-            winRate={player.winRate}
-            onClick={() => handlePlayer(player)}
-          />
+      {players.length !== 0 ? (
+        <>
+          {players.map((player) => (
+            <div key={player.id}>
+              <PlayerCard
+                rank={player.rank}
+                matchs={player.matchs}
+                name={player.name}
+                stars={player.stars}
+                winRate={player.winRate}
+                onClick={() => handlePlayer(player)}
+              />
+            </div>
+          ))}
+        </>
+      ) : (
+        <div>
+          <p className='text-center'>Lista vazia adicione jogadores no + verde, localizado no canto inferior direito.</p>
         </div>
-      ))}
+      )}
     </div>
   </div>
 );
@@ -70,7 +81,6 @@ export default function RandomChoiceScreen({
   }, [fetchPlayers]);
 
   const router = useRouter();
-  console.log(router.prefetch);
 
   const handleDrawTeams = () => {
     if (type === 'random') {
@@ -135,7 +145,11 @@ export default function RandomChoiceScreen({
                   }
                   className="px-10 py-2 disabled:bg-slate-700 cursor-pointer h-full rounded-tr-md flex bg-red-800"
                 >
-                  {isLoading ? <CircularProgress color='inherit' size={23}/> : 'Sortear'}
+                  {isLoading ? (
+                    <CircularProgress color="inherit" size={23} />
+                  ) : (
+                    'Sortear'
+                  )}
                 </button>
               </div>
             </div>
@@ -148,16 +162,12 @@ export default function RandomChoiceScreen({
                 style={{
                   maxHeight: '384px',
                   overflowY: 'auto',
-                  justifyContent: 'center',
-                  alignItems: 'center',
                   paddingTop: '33px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  flexDirection: 'row',
                   paddingBlock: '20px',
                   scrollbarWidth: 'thin',
                   scrollbarColor: '#4B5563 #1F2937',
                 }}
+                className="grid grid-cols-1 md:grid-cols-2 px-5"
               >
                 {matchPlayers.map((player) => (
                   <div key={player.id} className="px-1">

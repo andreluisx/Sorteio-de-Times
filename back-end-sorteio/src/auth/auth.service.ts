@@ -17,6 +17,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { User } from './entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { v4 as uuid } from 'uuid';
+import { TokenPayloadDto } from './dto/token-payload.dto';
 
 @Injectable()
 export class AuthService {
@@ -126,5 +127,19 @@ export class AuthService {
       console.error('Erro ao registrar usuário:', e);
       throw e; 
     }
+  }
+
+  async checkAuth(tokenPayload: TokenPayloadDto) {
+    // Busca o usuário no banco de dados com base no userId ou email
+    const user = await this.userRepository.findOneBy({
+      id: tokenPayload?.sub,
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Usuário não encontrado');
+    }
+
+    const {password, ...userData } = user;
+    return userData;
   }
 }

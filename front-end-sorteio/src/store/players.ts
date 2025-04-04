@@ -20,8 +20,9 @@ type PlayersState = {
 
 type PlayersActions = {
   fetchPlayers: () => Promise<void>;
-  fetchPlayer: (id: string, router: AppRouterInstance) => Promise<void>;
+  fetchPlayer: (id: string) => Promise<void>;
   createPlayer: (name: string, stars: number) => Promise<void>;
+  deletePlayer: (id: string, router: AppRouterInstance) => Promise<void>;
   clearPlayer: () => void;
   togglePlayerBetweenLists: (playerId: string) => void;
   movePlayerToMatch: (playerId: string) => void;
@@ -54,15 +55,8 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
       set({ isLoading: true, error: null });
 
       try {
-        const token = localStorage.getItem('userToken');
-
-        if (!token) {
-          throw new Error('Token de autenticação não encontrado');
-        }
-
-        const response = await server.get('/players', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        
+        const response = await server.get('/players');
 
         set((state) => ({
           playersData: response.data.filter(
@@ -82,24 +76,13 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
       set({ isLoading: true, error: null });
 
       try {
-        const token = localStorage.getItem('userToken');
+        
+        const response = await server.get(`/players/${id}`);
 
-        if (!token) {
-          throw new Error('Token de autenticação não encontrado');
-        }
-
-        const response = await server.get(`/players/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const response_matchs = await server.get(`/match/history-player/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        console.log(response_matchs.data)
+        const response_matchs = await server.get(`/match/history-player/${id}`);
 
         set({ player: response.data, playerMatchs: response_matchs.data, isLoading: false });
       } catch (error) {
-        console.error('Erro ao carregar o player:', error);
         set({ error: 'Erro ao carregar o player', isLoading: false });
       }
     },
@@ -107,16 +90,10 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
     createPlayer: async (name: string, stars: number) => {
       set({ isLoading: true });
       try {
-        const token = localStorage.getItem('userToken');
-
-        if (!token) {
-          throw new Error('Token de autenticação não encontrado');
-        }
-
+        
         const response = await server.post(
           '/players',
-          { name, stars },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { name, stars }
         );
         set((state) => ({
           playersData: [...state.playersData, response.data],
@@ -128,7 +105,6 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
       }
     },
 
-    // Função para alternar um jogador entre as listas
     togglePlayerBetweenLists: (playerId: string) => {
       set((state) => {
         // Verifica em qual lista o jogador está
@@ -215,16 +191,10 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
     updatePlayer: async (playerId: string, name?: string, stars?: number) => {
       try {
         set({ isLoading: true });
-        const token = localStorage.getItem('userToken');
-
-        if (!token) {
-          throw new Error('Token de autenticação não encontrado');
-        }
-
+        
         const response = await server.patch(
           `/players/${playerId}`,
-          { name, stars },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { name, stars }
         );
 
         set({ player: response.data, isLoading: false });
@@ -233,6 +203,20 @@ export const usePlayersStore = create<PlayersState & PlayersActions>((set) => {
         toast('Ocorreu um problema', { type: 'error' });
         set({ isLoading: false });
       }
+    },
+
+    deletePlayer: async (id: string, router: AppRouterInstance)=> {
+      set({isLoading: true})
+      try{
+        await server.patch(`/players/remove/${id}`)
+        router.push('/players-estatistics/players')
+      }catch(error){
+        console.log(error)
+        toast(error.response?.data?.message || 'Problema ao deletar jogador', { type: 'error' });
+      }finally{
+        set({isLoading: false})
+      }
+     
     },
 
     clearPlayer: ()=>{

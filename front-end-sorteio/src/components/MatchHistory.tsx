@@ -52,32 +52,33 @@ export default function MatchHistory({matchs}) {
   }
 
   const TextResult = (match)=>{
-    if(!match.playerWon){
+    if(match.playerWon === 0){
+      return 'Não Finalizado'
+    }
+    else if(!match.playerWon){
       return `Vencedor: Time ${match.winner}`
     }
-    if(match.playerWon === 1){
+    else if(match.playerWon === 1){
       return 'Vitória'
     }
     else if(match.playerWon === 2){
       return 'Derrota'
     }
-    else if(match.playerWon === 0){
-      return 'Não Finalizado'
-    }
+    
   }
 
   const textResultColor = (match) => {
-    if(!match.playerWon){
+    if(match.playerWon === 0){
+      return 'text-yellow-700'
+    }
+    else if(!match.playerWon){
       return `text-green-500`
     }
-    if(match.playerWon === 1){
+    else if(match.playerWon === 1){
       return 'text-green-700'
     }
     else if(match.playerWon === 2){
       return 'text-red-700'
-    }
-    else if(match.playerWon === 0){
-      return 'text-yellow-500'
     }
   }
   

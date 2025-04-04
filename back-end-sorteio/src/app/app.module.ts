@@ -25,7 +25,7 @@ import { AuthModule } from 'src/auth/auth.module';
           database: appConfigurations.database.database,
           password: appConfigurations.database.password,
           autoLoadEntities: true,
-          synchronize: true, // WARNING: Apaga e recria tabelas ao iniciar!
+          synchronize: true,
         };
       },
     }),

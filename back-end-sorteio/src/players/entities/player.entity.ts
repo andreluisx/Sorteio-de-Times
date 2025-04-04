@@ -7,6 +7,9 @@ import {
   UpdateDateColumn,
   JoinColumn,
   ManyToOne,
+  AfterLoad,
+  ViewColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -47,8 +50,37 @@ export class Players {
     return totalGames > 0 ? (this.wins / totalGames) * 100 : 0;
   }
 
+  @DeleteDateColumn({ default: null }) // Coluna que indica se foi "deletado"
+  deleted_at?: Date;
+
   get matchs(): number {
     return this.wins + this.loses;
+  }
+
+  get idealStar(): number {
+    const idealWinRate = 65; // WinRate ideal
+    const winRate = this.winRate;
+
+    const deviation = Math.abs(winRate - idealWinRate);
+    // exemplo   15  =  50 - 65
+    // Define o número de estrelas com base no desvio
+    if (deviation <= 7) {
+      return 10; // (winRate maior que 58%)
+    } else if (deviation <= 10) {
+      return 9; // (winRate maior que 55%)
+    } else if (deviation <= 15) {
+      return 8; // (winRate maior que 50%)
+    } else if (deviation <= 20) {
+      return 7; // (winRate maior que 45%)
+    } else if (deviation <= 24) {
+      return 6; // (winRate maior que 40%)
+    } else if (deviation <= 36) {
+      return 4; // (winRate maior que 29%)
+    } else if (deviation <= 42) {
+      return 2; // (winRate maior que 23%)
+    } else {
+      return 1; // Muito distante do ideal (abaixo de 23%)
+    }
   }
 
   get rank(): string {

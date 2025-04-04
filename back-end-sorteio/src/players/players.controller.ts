@@ -30,6 +30,20 @@ export class PlayersController {
     return this.playersService.create(createPlayerDto, tokenPayload);
   }
 
+  @Get('better-balanced')
+  betterBalancedPlayers(
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
+  ) {
+    return this.playersService.betterBalancedPlayers(tokenPayload);
+  }
+
+  @Get('better-players')
+  betterPlayers(
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
+  ) {
+    return this.playersService.betterPlayers(tokenPayload);
+  }
+
   @Get()
   findAll(
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
@@ -54,7 +68,7 @@ export class PlayersController {
   }
 
   @UseGuards(OwnershipGuard)
-  @Delete(':id')
+  @Patch('remove/:id')
   remove(@Param('id') id: string) {
     return this.playersService.remove(id);
   }

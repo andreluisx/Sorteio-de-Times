@@ -33,11 +33,12 @@ export default function Players() {
             overflowY: 'auto',
             justifyContent: 'center',
             alignItems: 'center',
-            paddingTop: '28px',
+            
             display: 'flex',
             flexWrap: 'wrap',
             flexDirection: 'row',
           }}
+          className='lg:pt-5 pt-1 pb-10'
         >
           {allPlayers.map((player: Player) => (
             <div key={player.id} className="px-3">

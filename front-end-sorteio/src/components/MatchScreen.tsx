@@ -25,7 +25,6 @@ export default function MatchScreen() {
     getMatch(Number(id));
   }, [getMatch, id]);
 
-  console.log(match);
   useEffect(() => {
     if (match.team1 && match.team2) {
       const calcTeamStats = (team: Player[]) => {

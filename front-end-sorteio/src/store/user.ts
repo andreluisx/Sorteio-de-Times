@@ -1,6 +1,6 @@
 // Isto deveria ser userStore.ts, não playersStore.ts
 import { create } from 'zustand';
-import { server } from '@/api/server'
+import { server } from '@/api/server';
 import { toast } from 'react-toastify';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { AxiosError } from 'axios';
@@ -10,64 +10,97 @@ type State = {
   refreshToken: string | undefined;
   isLoading: boolean;
   error: boolean;
+  userAuthenticated: boolean;
 };
 
 type Actions = {
-  login: (email: string, password: string, router: AppRouterInstance) => Promise<void>;
-  logout: () => Promise<void>;
-  register: (email: string, password: string, router: AppRouterInstance) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    router: AppRouterInstance
+  ) => Promise<void>;
+  authCheck: (token: string) => Promise<void>;
+  logout: () => void;
+  register: (
+    email: string,
+    password: string,
+    router: AppRouterInstance
+  ) => Promise<void>;
 };
 
 // Cria o store
 export const useUsersStore = create<State & Actions>((set) => ({
   token: '',
-  refreshToken: '', 
+  refreshToken: '',
   isLoading: false,
   error: false,
+  userAuthenticated: false,
 
   login: async (email: string, password: string, router: AppRouterInstance) => {
     set({ isLoading: true, error: false });
 
     try {
-      const response = await server.post('/auth/login', {email, password})
-    
-      // Armazene o token e o refreshToken no estado e no localStorage para persistência
-      set({ 
-        token: response.data.accessToken, 
-        refreshToken: response.data.refreshToken, 
-        isLoading: false 
-      });
-      
+      const response = await server.post('/auth/login', { email, password });
+
       // Salve no localStorage para manter entre recarregamentos
       localStorage.setItem('userToken', response.data.accessToken);
       localStorage.setItem('refreshToken', response.data.refreshToken);
-      
-      router.push('/random-draw')
+
+      // Armazene o token e o refreshToken no estado e no localStorage para persistência
+      set({
+        token: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+        isLoading: false,
+      });
+
+      router.push('/random-draw');
     } catch (error) {
-      console.error("Erro ao fazer login:", error);
-      toast('usuário ou senha inválidos', { type:'error' })
-      set({ isLoading: false, error: true });
+      set({ isLoading: false, error: true, userAuthenticated: true });
     }
   },
 
-  register: async (email: string, password: string, router: AppRouterInstance) => {
-    set({ isLoading: true, error: false});
+  register: async (
+    email: string,
+    password: string,
+    router: AppRouterInstance
+  ) => {
+    set({ isLoading: true, error: false });
 
     try {
-      await server.post('/auth/register', {email, password})
-      
+      await server.post('/auth/register', { email, password });
+
       set({ isLoading: false });
-      toast('usuário cadastrado com sucesso', { type:'success' })
-      router.push('/auth/login')    
-    } catch (error: AxiosError) {
-      toast(error.response.data.message, { type:'error' })
+      toast('usuário cadastrado com sucesso', { type: 'success' });
+      router.push('/auth/login');
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast(error.response?.data?.message, { type: 'error' });
+      }
       set({ isLoading: false, error: true });
       throw error;
     }
   },
+
   logout: () => {
-    set({ token: undefined, refreshToken: undefined });
+    set({
+      token: undefined,
+      refreshToken: undefined,
+      userAuthenticated: false,
+    });
     localStorage.removeItem('userToken');
     localStorage.removeItem('refreshToken');
+    window.location.href = '/auth/login';
+  },
+
+  authCheck: async () => {
+    set({ isLoading: true });
+    const token = localStorage.getItem('userToken');
+    if (token) {
+      set({ userAuthenticated: true, isLoading: false });
+    } else {
+      toast('Login expirado.', { type: 'error' });
+
+      set({ isLoading: false, userAuthenticated: false });
+    }
   },
 }));

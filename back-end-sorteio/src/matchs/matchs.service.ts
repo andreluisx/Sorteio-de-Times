@@ -14,6 +14,7 @@ import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 import { RandomMatchDto } from './dto/create-random-match.dto';
 import { ListService } from './list.service';
 import { BalancedTypes } from './utils/balanced-types.enum';
+import {v4 as uuid} from 'uuid'
 
 @Injectable()
 export class MatchsService {
@@ -90,19 +91,23 @@ export class MatchsService {
       const team1 = match.teamPlayers
         .filter((tp) => tp.teamNumber === 1)
         .map((tp) => ({
-          name: tp.player.name,
-          star: tp.player.stars,
-          winRate: Math.ceil(tp.player.winRate),
-          matchs: tp.player.matchs,
+          id: tp.player?.id || uuid(),
+          name: tp.player?.name || 'Jogador Deletado',
+          stars: tp.player?.stars || 0,
+          winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+          matchs: tp.player?.matchs || 0,
+          isDeleted: !tp.player,
         }));
 
       const team2 = match.teamPlayers
         .filter((tp) => tp.teamNumber === 2)
         .map((tp) => ({
-          name: tp.player.name,
-          star: tp.player.stars,
-          winRate: Math.ceil(tp.player.winRate),
-          matchs: tp.player.matchs,
+          id: tp.player?.id || uuid(),
+          name: tp.player?.name || 'Jogador Deletado',
+          stars: tp.player?.stars || 0,
+          winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+          matchs: tp.player?.matchs || 0,
+          isDeleted: !tp.player,
         }));
 
       return {
@@ -130,19 +135,23 @@ export class MatchsService {
     const team1 = match.teamPlayers
       .filter((tp) => tp.teamNumber === 1)
       .map((tp) => ({
-        name: tp.player.name,
-        stars: tp.player.stars,
-        winRate: Math.ceil(tp.player.winRate),
-        matchs: tp.player.matchs,
+        id: tp.player?.id || uuid(),
+        name: tp.player?.name || 'Jogador Deletado',
+        stars: tp.player?.stars || 0,
+        winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+        matchs: tp.player?.matchs || 0,
+        isDeleted: !tp.player,
       }));
 
     const team2 = match.teamPlayers
       .filter((tp) => tp.teamNumber === 2)
       .map((tp) => ({
-        name: tp.player.name,
-        stars: tp.player.stars,
-        winRate: Math.ceil(tp.player.winRate),
-        matchs: tp.player.matchs,
+        id: tp.player?.id || uuid(),
+        name: tp.player?.name || 'Jogador Deletado',
+        stars: tp.player?.stars || 0,
+        winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+        matchs: tp.player?.matchs || 0,
+        isDeleted: !tp.player,
       }));
 
     return {
@@ -165,9 +174,12 @@ export class MatchsService {
 
     // Verificamos se estamos definindo um vencedor (onde antes não havia)
     // OU se estamos mudando o vencedor previamente definido
-    if ((match.winner === 0 && updateMatchDto.winner !== 0) || 
-        (match.winner !== 0 && updateMatchDto.winner !== match.winner && updateMatchDto.winner !== 0)) {
-      
+    if (
+      (match.winner === 0 && updateMatchDto.winner !== 0) ||
+      (match.winner !== 0 &&
+        updateMatchDto.winner !== match.winner &&
+        updateMatchDto.winner !== 0)
+    ) {
       // Atualizamos o tempo de partida apenas se estamos definindo o vencedor pela primeira vez
       if (match.winner === 0) {
         const created = new Date(match.createdAt).getTime();
@@ -212,16 +224,16 @@ export class MatchsService {
 
     // Retornamos a partida atualizada com os dados dos jogadores
     return {
-        ...updatedMatch,
-        teamPlayers: updatedMatch.teamPlayers.map((team) => ({
-            ...team,
-            player: {
-                ...team.player,
-                matchs: team.player.matchs,
-                winRate: Math.ceil(team.player.winRate), 
-                rank: team.player.rank, 
-            },
-        })),
+      ...updatedMatch,
+      teamPlayers: updatedMatch.teamPlayers.map((team) => ({
+        ...team,
+        player: {
+          ...team.player,
+          matchs: team.player.matchs,
+          winRate: Math.ceil(team.player.winRate),
+          rank: team.player.rank,
+        },
+      })),
     };
   }
 
@@ -280,11 +292,21 @@ export class MatchsService {
         ...team2Associations,
       ]);
       const team1R = team1.map((player) => {
-        return { name: player.name, stars: player.stars, winRate: Math.ceil(player.winRate), matchs: player.matchs };
+        return {
+          name: player.name,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
       });
 
       const team2R = team2.map((player) => {
-        return { name: player.name, stars: player.stars, winRate: Math.ceil(player.winRate), matchs: player.matchs };
+        return {
+          name: player.name,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
       });
 
       return {
@@ -351,11 +373,21 @@ export class MatchsService {
       ]);
 
       const team1R = team1.map((player) => {
-        return { name: player.name, stars: player.stars, winRate: Math.ceil(player.winRate), matchs: player.matchs };
+        return {
+          name: player.name,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
       });
 
       const team2R = team2.map((player) => {
-        return { name: player.name, stars: player.stars, winRate: Math.ceil(player.winRate), matchs: player.matchs };
+        return {
+          name: player.name,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
       });
 
       return {
@@ -422,11 +454,21 @@ export class MatchsService {
       ]);
 
       const team1R = team1.map((player) => {
-        return { name: player.name, stars: player.stars, winRate: Math.ceil(player.winRate), matchs: player.matchs };
+        return {
+          name: player.name,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
       });
 
       const team2R = team2.map((player) => {
-        return { name: player.name, stars: player.stars, winRate: Math.ceil(player.winRate), matchs: player.matchs };
+        return {
+          name: player.name,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
       });
 
       return {
@@ -453,30 +495,48 @@ export class MatchsService {
         .where('player.id = :id', { id })
         .orderBy('match', 'DESC') // Filtra as partidas em que o jogador participa
         .getMany();
-  
+
       // Estrutura os dados para incluir team1, team2 e userWon
-      return matches.map(match => {
+      return matches.map((match) => {
         const team1 = match.teamPlayers
-          .filter(tp => tp.teamNumber === 1) // Filtra os jogadores do time 1
-          .map(tp => tp.player); // Extrai os jogadores
-  
+          .filter((tp) => tp.teamNumber === 1) // Filtra os jogadores do time 1
+          .map((tp) => {
+            return {
+              id: tp.player?.id || uuid(),
+              name: tp.player?.name || 'Jogador Deletado',
+              stars: tp.player?.stars || 0,
+              winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+              matchs: tp.player?.matchs || 0,
+              isDeleted: !tp.player,
+            };
+          }); // Extrai os jogadores
+
         const team2 = match.teamPlayers
-          .filter(tp => tp.teamNumber === 2) // Filtra os jogadores do time 2
-          .map(tp => tp.player); // Extrai os jogadores
-  
+          .filter((tp) => tp.teamNumber === 2) // Filtra os jogadores do time 2
+          .map((tp) => {
+            return {
+              id: tp.player?.id || uuid(),
+              name: tp.player?.name || 'Jogador Deletado',
+              stars: tp.player?.stars || 0,
+              winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+              matchs: tp.player?.matchs || 0,
+              isDeleted: !tp.player,
+            };
+          });
+
         // Verifica se o usuário ganhou a partida
-        let playerWon = 0
-        const userTeam = match.teamPlayers.find(tp => tp.player.id === id)?.teamNumber;
-        if(match.winner === 0){
-          playerWon = 0
+        let playerWon = 0;
+        const userTeam = match.teamPlayers.find(
+          (tp) => tp.player?.id === id,
+        )?.teamNumber;
+        if (match.winner === 0) {
+          playerWon = 0;
+        } else if (userTeam === match.winner) {
+          playerWon = 1;
+        } else if (userTeam !== match.winner && match.winner !== 0) {
+          playerWon = 2;
         }
-        else if(userTeam === match.winner){
-          playerWon = 1
-        }
-        else if(userTeam !== match.winner && match.winner !== 0){
-          playerWon = 2
-        }
-  
+
         return {
           id: match.id,
           winner: match.winner,
@@ -492,5 +552,4 @@ export class MatchsService {
       throw new Error(error);
     }
   }
-
 }

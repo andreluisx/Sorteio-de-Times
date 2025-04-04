@@ -27,9 +27,10 @@ interface FullPlayers extends Players {
 function createPlayerCopy(player: Players): FullPlayers {
   return {
     ...player,
-    winRate: player.winRate || 0, // Valor padrão se não existir
-    matchs: player.matchs || 0, // Valor padrão se não existir
-    rank: player.rank || 'ferro', // Valor padrão se não existir
+    idealStar: 0,
+    winRate: player.winRate || 0,
+    matchs: player.matchs || 0,
+    rank: player.rank || 'ferro',
   };
 }
 

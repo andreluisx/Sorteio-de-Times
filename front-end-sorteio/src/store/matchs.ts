@@ -71,15 +71,8 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   getMatch: async (id: number) => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
-      const response = await server.get(`/match/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      const response = await server.get(`/match/${id}`);
 
       set({ match: response.data, isLoading: false });
     } catch (error) {
@@ -91,28 +84,20 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   createRandomMatch: async (players: Player[], router: AppRouterInstance) => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
+      
       const playersId = players.map((player) => player.id);
 
       const response = await server.post(
         '/match/random',
-        { players: playersId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { players: playersId }
       );
 
       set({ match: response.data });
-      console.log(response.data);
 
       router.push(`/matchs/${response.data.id}`);
 
       set({ isLoading: false });
     } catch (error) {
-      console.log(error);
       set({ isLoading: false });
     }
   },
@@ -120,28 +105,21 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   createStarMatch: async (players: Player[], router: AppRouterInstance) => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
+      
       const playersId = players.map((player) => player.id);
 
       const response = await server.post(
         '/match/star',
-        { players: playersId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { players: playersId }
       );
 
       set({ match: response.data });
-      console.log(response.data);
+      (response.data);
 
       router.push(`/matchs/${response.data.id}`);
 
       set({ isLoading: false });
     } catch (error) {
-      console.log(error);
       set({ isLoading: false });
     }
   },
@@ -149,28 +127,20 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   createWinRateMatch: async (players: Player[], router: AppRouterInstance) => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
+      
       const playersId = players.map((player) => player.id);
 
       const response = await server.post(
         '/match/winrate',
-        { players: playersId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { players: playersId }
       );
 
       set({ match: response.data });
-      console.log(response.data);
 
       router.push(`/matchs/${response.data.id}`);
 
       set({ isLoading: false });
     } catch (error) {
-      console.log(error);
       set({ isLoading: false });
     }
   },
@@ -178,23 +148,16 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   setWinner: async (id: number, winner: number, router: AppRouterInstance) => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
+      
       const response = await server.patch(
         `/match/${id}`,
-        { winner },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { winner }
       );
 
       set({ winnerTeam: response.data, isLoading: false });
 
       router.push('/random-draw/result/winner');
     } catch (e) {
-      console.log(e);
       set({ isLoading: false });
     }
   },
@@ -202,15 +165,8 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   deleteMatch: async (id: number) => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
-      server.delete(`/match/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      server.delete(`/match/${id}`);
 
       set({ isLoading: false });
 
@@ -224,20 +180,11 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   getAllMatchs: async () => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token de autenticação não encontrado');
-      }
-
-      const response = await server.get('/match', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      const response = await server.get('/match');
 
       set({ allMatchs: response.data, isLoading: false });
-      console.log(response.data);
     } catch (error) {
-      console.log(error);
       set({ isLoading: false });
     }
   },
