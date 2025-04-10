@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
+import Image from 'next/image';
 
 type Props = {
   status: 'authenticated' | 'unauthenticated' | 'loading';
@@ -18,11 +19,19 @@ export default function AuthLinks({ status }: Props) {
     return (
       <div className='flex flex-row gap-3 justify-center items-center'>
         <Link href={'/random-draw'}>
-          <p className="px-4 py-2 text-white">DashBoard</p>
+          <p className="px-2 py-2 text-white">Dashboard</p>
         </Link>
-        <button onClick={handleLogout} className="cursor-pointer">
-          <p className="px-4 py-2 text-white">Sair</p>
-        </button>
+        <Link href={'/info/account'} className="cursor-pointer">
+        <div className="relative w-10 h-10 rounded-full border-2 border-red-500 overflow-hidden mr-3">
+          <Image 
+            src={'/tutorial/user.png'} 
+            alt="Avatar do usuário"
+            width={45}
+            height={45}
+            className="object-cover"
+          />
+        </div>
+        </Link>
       </div>
     );
   }

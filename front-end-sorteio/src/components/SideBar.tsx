@@ -80,7 +80,7 @@ export default function SideBar() {
       type: 'divider'
     },
     {
-      href: '/report-problem',
+      href: '/info/report',
       text: 'Relatar Problema',
       icon: (
         <Alert/>
