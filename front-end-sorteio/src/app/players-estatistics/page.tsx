@@ -1,7 +1,7 @@
 import ButtonNavigationCard from '@/components/ButtonNavigationCard';
 import playerImage from '@/constants/buttons/player.png';
 import estatisticsImage from '@/constants/buttons/stats.png';
-import { IoGameController } from "react-icons/io5";
+import starsImage from '@/constants/buttons/stars.png';
 
 // app/page.tsx
 export default function PlayerEstatistics() {
@@ -11,7 +11,8 @@ export default function PlayerEstatistics() {
       <div className='flex flex-wrap  justify-center items-center flex-row gap-10 pt-5'>
         
         <ButtonNavigationCard placeHolder='Jogadores' imageUrl={playerImage} nextPage='/players-estatistics/players'/>
-        <ButtonNavigationCard placeHolder='Melhores Jogadores' imageUrl={estatisticsImage} nextPage='/players-estatistics/players'/>
+        <ButtonNavigationCard placeHolder='Melhores Jogadores' imageUrl={estatisticsImage} nextPage='/players-estatistics/best-players'/>
+        <ButtonNavigationCard placeHolder='Mais Bem Avaliados' imageUrl={starsImage} nextPage='/players-estatistics/better-balanced'/>
       </div>
     </div>
   );

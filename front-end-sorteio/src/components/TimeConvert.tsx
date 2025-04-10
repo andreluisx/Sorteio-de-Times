@@ -16,14 +16,14 @@ export default function TimeConvert ({time} : TimeConvertProps) {
 }
   if(!time){
     return (
-      <div className='h-fit flex rounded-2xl px-3 py-1'>
+      <div className='h-fit w-fit flex rounded-2xl px-3 py-1'>
         <p>Em andamento</p>
       </div>
     )
   }
   
   return (
-  <div className='h-fit flex rounded-2xl px-3 py-1 bg-slate-700'>
+  <div className='h-fit w-fit flex rounded-2xl px-3 py-1 bg-slate-700'>
     <p>{formatTime(time)}</p>
   </div>
 )

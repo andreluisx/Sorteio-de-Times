@@ -16,6 +16,7 @@ import {
   ChevronRight 
 } from "lucide-react";
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState("sorteios");
@@ -33,10 +34,10 @@ export default function LandingPage() {
                 Crie times equilibrados, acompanhe estatísticas e mantenha um histórico completo das suas partidas
               </p>
               <div className="flex space-x-4">
-                <button className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
+                <button className="cursor-pointer px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
                   Começar Agora
                 </button>
-                <button className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors">
+                <button onClick={() => window.location.replace("/#como-funciona")} className="cursor-pointer px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors">
                   Saiba Mais
                 </button>
               </div>
@@ -49,11 +50,11 @@ export default function LandingPage() {
       </section>
 
       {/* Como Funciona */}
-      <section id="como-funciona" className="py-16 px-4 ">
-        <div className="container mx-auto pt-16">
+      <section id="como-funciona" className="pb-16 pt-4 px-4 lg:px-24">
+        <div className="container mx-auto pt-6">
           <h2 className="text-3xl font-bold mb-12 text-center">Como Funciona</h2>
           
-          <div className="grid md:grid-cols-4 w-full gap-8">
+          <div className="grid md:grid-cols-2 w-full gap-8">
             <div className="bg-slate-700/50 p-6 rounded-xl border border-slate-600 text-center">
               <div className="bg-red-600/20 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
                 <Users className="h-8 w-8 text-red-500" />
@@ -107,7 +108,7 @@ export default function LandingPage() {
               </p>
               <div className="bg-slate-700/50 p-4 rounded-lg">
                 <p className="text-sm text-slate-400">
-                  <span className="font-semibold text-slate-200">Como funciona:</span> Jogadores recebem de 1-5 estrelas e o sistema distribui igualmente o total de estrelas entre os times.
+                  <span className="font-semibold text-slate-200">Como funciona:</span> Jogadores recebem de 1-10 estrelas e o sistema distribui igualmente o total de estrelas entre os times.
                 </p>
               </div>
             </div>
@@ -155,10 +156,10 @@ export default function LandingPage() {
             <p className="text-slate-300 mb-4">
               Além dos sorteios automáticos, você pode definir manualmente os integrantes de cada time. Útil quando os capitães querem escolher suas próprias equipes ou para situações especiais.
             </p>
-            <a href="#" className="text-red-400 hover:text-red-300 flex items-center w-fit">
+            <Link href="/info/tutorial" className="text-red-400 hover:text-red-300 flex items-center w-fit">
               Saiba mais sobre seleção manual
               <ChevronRight className="h-4 w-4 ml-1" />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -172,19 +173,19 @@ export default function LandingPage() {
             <div className="bg-slate-700 rounded-lg overflow-hidden">
               <div className="p-4 flex border-b border-slate-600">
                 <button 
-                  className={`px-4 py-2 ${activeTab === "sorteios" ? "bg-red-600 text-white" : "bg-slate-800 text-slate-300"} rounded-lg mr-2`}
+                  className={`cursor-pointer px-4 py-2 ${activeTab === "sorteios" ? "bg-red-600 text-white" : "bg-slate-800 text-slate-300"} rounded-lg mr-2`}
                   onClick={() => setActiveTab("sorteios")}
                 >
                   Dados dos Sorteios
                 </button>
                 <button 
-                  className={`px-4 py-2 ${activeTab === "players" ? "bg-red-600 text-white" : "bg-slate-800 text-slate-300"} rounded-lg mr-2`}
+                  className={`cursor-pointer px-4 py-2 ${activeTab === "players" ? "bg-red-600 text-white" : "bg-slate-800 text-slate-300"} rounded-lg mr-2`}
                   onClick={() => setActiveTab("players")}
                 >
                   Ranking de Jogadores
                 </button>
                 <button 
-                  className={`px-4 py-2 ${activeTab === "historico" ? "bg-red-600 text-white" : "bg-slate-800 text-slate-300"} rounded-lg`}
+                  className={`cursor-pointer px-4 py-2 ${activeTab === "historico" ? "bg-red-600 text-white" : "bg-slate-800 text-slate-300"} rounded-lg`}
                   onClick={() => setActiveTab("historico")}
                 >
                   Histórico de Partidas
@@ -202,11 +203,11 @@ export default function LandingPage() {
                       <ul className="space-y-2 text-slate-300">
                         <li className="flex items-center">
                           <TrendingUp className="h-4 w-4 text-red-500 mr-2" />
-                          Equilíbrio entre os times
+                          Aleatoriedade para evitar times repetidos
                         </li>
                         <li className="flex items-center">
                           <TrendingUp className="h-4 w-4 text-red-500 mr-2" />
-                          Tempo médio das partidas
+                          Equilíbrio entre os times
                         </li>
                         <li className="flex items-center">
                           <TrendingUp className="h-4 w-4 text-red-500 mr-2" />
@@ -230,15 +231,15 @@ export default function LandingPage() {
                       <ul className="space-y-2 text-slate-300">
                         <li className="flex items-center">
                           <Award className="h-4 w-4 text-red-500 mr-2" />
-                          Maior taxa de vitórias
+                          Melhores jogadores
                         </li>
                         <li className="flex items-center">
                           <Award className="h-4 w-4 text-red-500 mr-2" />
-                          Jogador mais valioso
+                          Jogadores com mais vitórias
                         </li>
                         <li className="flex items-center">
                           <Award className="h-4 w-4 text-red-500 mr-2" />
-                          Jogador mais consistente
+                          Jogadores bem avaliados
                         </li>
                       </ul>
                     </div>
@@ -266,7 +267,7 @@ export default function LandingPage() {
                         </li>
                         <li className="flex items-center">
                           <Database className="h-4 w-4 text-red-500 mr-2" />
-                          Evolução dos jogadores
+                          Histórico Individual
                         </li>
                       </ul>
                     </div>
@@ -303,7 +304,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Estatísticas Detalhadas</h3>
               <p className="text-slate-300">
-                Acompanhe o desempenho de cada jogador com métricas precisas e comparativas.
+                Acompanhe o desempenho dos jogadores com métricas precisas e comparativas.
               </p>
             </div>
             
@@ -333,7 +334,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Histórico de Partidas</h3>
               <p className="text-slate-300">
-                Registro completo de todas as partidas realizadas e evolução dos jogadores ao longo do tempo.
+                Registro completo de todas as partidas realizadas e histórico individual de cada jogador.
               </p>
             </div>
             
@@ -358,17 +359,15 @@ export default function LandingPage() {
             Experimente a plataforma e nunca mais perca tempo com sorteios manuais ou times desequilibrados
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <button className="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-lg font-semibold text-lg transition-colors">
+            <button className="cursor-pointer px-8 py-4 bg-red-600 hover:bg-red-700 rounded-lg font-semibold text-lg transition-colors">
               Criar Conta Grátis
             </button>
-            <button className="px-8 py-4 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-lg transition-colors">
-              Ver Demonstração
-            </button>
+            <Link href={'/info/tutorial'} className="cursor-pointer px-8 py-4 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-lg transition-colors">
+              Como Funciona?
+            </Link>
           </div>
         </div>
       </section>
-
-     
     </div>
   );
 }

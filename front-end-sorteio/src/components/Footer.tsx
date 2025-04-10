@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer(){
   return(
     <footer className="bg-slate-900 flex w-full py-12 px-4 border-t border-slate-800">
@@ -17,28 +19,28 @@ export default function Footer(){
             <div>
               <h4 className="text-lg font-semibold mb-4">Recursos</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-red-400 transition-colors">Tipos de Sorteio</a></li>
-                <li><a href="#" className="hover:text-red-400 transition-colors">Estatísticas</a></li>
-                <li><a href="#" className="hover:text-red-400 transition-colors">Histórico</a></li>
-                <li><a href="#" className="hover:text-red-400 transition-colors">Ranking</a></li>
+                <li><Link href="/info/tutorial" className="hover:text-red-400 transition-colors">Tipos de Sorteio</Link></li>
+                <li><Link href="/info/tutorial" className="hover:text-red-400 transition-colors">Estatísticas</Link></li>
+                <li><Link href="/info/tutorial" className="hover:text-red-400 transition-colors">Histórico</Link></li>
+                <li><Link href="/info/tutorial" className="hover:text-red-400 transition-colors">Ranking</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-lg font-semibold mb-4">Suporte</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-red-400 transition-colors">Perguntas Frequentes</a></li>
-                <li><a href="#" className="hover:text-red-400 transition-colors">Contato</a></li>
-                <li><a href="#" className="hover:text-red-400 transition-colors">Tutoriais</a></li>
+                <li><Link href="/info/faq" className="hover:text-red-400 transition-colors">Perguntas Frequentes</Link></li>
+                <li><Link href="#" className="hover:text-red-400 transition-colors">Contato</Link></li>
+                <li><Link href="/info/tutorial" className="hover:text-red-400 transition-colors">Tutoriais</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-lg font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-red-400 transition-colors">Termos de Uso</a></li>
-                <li><a href="#" className="hover:text-red-400 transition-colors">Privacidade</a></li>
-                <li><a href="#" className="hover:text-red-400 transition-colors">Cookies</a></li>
+                <li><Link href="/info/terms" className="hover:text-red-400 transition-colors">Termos de Uso</Link></li>
+                <li><Link href="#" className="hover:text-red-400 transition-colors">Privacidade</Link></li>
+                <li><Link href="#" className="hover:text-red-400 transition-colors">Cookies</Link></li>
               </ul>
             </div>
           </div>

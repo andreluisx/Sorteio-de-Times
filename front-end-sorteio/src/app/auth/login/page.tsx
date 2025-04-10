@@ -11,6 +11,7 @@ import imageGitHub from '@/constants/icons/gitlogo.png';
 import { signIn } from 'next-auth/react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { toast } from 'react-toastify';
 
 // Esquema de validação com Yup
 const LoginSchema = Yup.object().shape({
@@ -21,7 +22,7 @@ const LoginSchema = Yup.object().shape({
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errorLogin, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
   // Configuração do Formik
@@ -35,24 +36,28 @@ export default function LoginPage() {
     onSubmit: async (values) => {
       // Adicione async aqui
       try {
-        setLoading(true)
-        const result = await signIn('credentials', {
-          redirect: false,
-          email: values.email, 
-          password: values.password,
-          rememberMe: values.rememberMe,
-        });
+        setLoading(true);
+        try {
+          const result = await signIn('credentials', {
+            email: values.email,
+            password: values.password,
+            rememberMe: values.rememberMe,
+            redirect: true,
+            callbackUrl: '/random-draw',
+          });
 
-        if (result?.error) {
-          setError('Email ou senha incorretos');
-        } else {
-          router.push('/random-draw'); 
+          if (result?.error) {
+            setError('Email ou senha incorretos');
+          }
+        } catch (e) {
+          toast('Erro ao logar', { type: 'error' });
+        } finally {
+          setLoading(false);
         }
-        setLoading(false)
       } catch (error) {
         setError('Ocorreu um erro durante o login');
         console.error('Login error:', error);
-        setLoading(false)
+        setLoading(false);
       }
     },
   });

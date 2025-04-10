@@ -1,12 +1,7 @@
 import {
-  Delete,
-  Get,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  Patch,
-  Post,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
@@ -15,7 +10,6 @@ import { Players } from './entities/player.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { v4 as uuid } from 'uuid';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
-import { date } from 'joi';
 import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
@@ -191,9 +185,17 @@ export class PlayersService {
     const allPlayers = await this.playersRepository.find({
       where: { userId: token.sub, deleted_at: null },
     });
-
+  
     const betterPlayers = allPlayers
-      .sort((a, b) => b.winRate - a.winRate)
+      .sort((a, b) => {
+        // Criando uma pontuação que combina win rate e número de partidas
+        // Multiplicamos o win rate pela raiz quadrada do número de partidas
+        // para dar mais peso aos jogadores com mais experiência, mas sem penalizar
+        // demais os novos jogadores com bom desempenho
+        const scoreA = a.winRate * Math.sqrt(a.matchs);
+        const scoreB = b.winRate * Math.sqrt(b.matchs);
+        return scoreB - scoreA; // Ordenação decrescente
+      })
       .slice(0, 5)
       .map((player) => {
         return {
@@ -206,7 +208,7 @@ export class PlayersService {
           matchs: player.matchs,
         };
       });
-
+  
     return { betterPlayers };
   }
 }

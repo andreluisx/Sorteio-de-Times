@@ -7,4 +7,5 @@ export default interface Player {
   rank: string;
   wins: number;
   loses: number;
+  status?: string;
 }

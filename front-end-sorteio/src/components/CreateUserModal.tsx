@@ -12,8 +12,8 @@ interface ModalProps{
 }
 
 export default function CreateUserModal({setModal}: ModalProps) {
-  const [stars, setStars] = useState(0)
-  const [name, setName] = useState('')
+  const [stars, setStars] = useState<number>(0)
+  const [name, setName] = useState<string>('')
   const disabledButton = !(stars && name) ? 1 : 2;
 
   const { createPlayer } = usePlayersStore()
@@ -53,7 +53,9 @@ export default function CreateUserModal({setModal}: ModalProps) {
               max={10}
               value={stars}
               onChange={(event, newValue) => {
-                setStars(newValue);
+                if(newValue){
+                  setStars(newValue);
+                }
               }}
               emptyIcon={<StarIcon style={{ opacity: 0.9, color:'#314158' }} fontSize="inherit" />}
             />
@@ -89,7 +91,9 @@ export default function CreateUserModal({setModal}: ModalProps) {
               readOnly
               value={stars}
               onChange={(event, newValue) => {
-                setStars(newValue);
+                if(newValue){
+                  setStars(newValue);
+                }
               }}
             />
         </div>

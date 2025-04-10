@@ -3,10 +3,12 @@ import { useMatchsStore } from '@/store/matchs';
 import TimeConvert from './TimeConvert';
 import { useRouter } from 'next/navigation';
 import { CircularProgress } from '@mui/material';
+import Player from '@/types/playerType';
+import { IMatchType } from '@/types/matchType';
 
-// Move date formatting to a client-side only function
+
 const formatDate = (dateString: string) => {
-  // Ensure this only runs on the client
+  
   if (typeof window !== 'undefined') {
     const date = new Date(dateString);
     const months = [
@@ -16,11 +18,14 @@ const formatDate = (dateString: string) => {
 
     return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
   }
-  // Return original string on server to prevent hydration mismatch
   return dateString;
 };
 
-export default function MatchHistory({matchs}) {
+interface MatchHistoryProps {
+  matchs: IMatchType[],
+}
+
+export default function MatchHistory({matchs}: MatchHistoryProps) {
   const { isLoading } = useMatchsStore();
   const router = useRouter();
 
@@ -36,7 +41,7 @@ export default function MatchHistory({matchs}) {
     );
   }
 
-  const borderResult = (match)=>{
+  const borderResult = (match: IMatchType)=>{
     if(!match){
       return ''
     }
@@ -51,24 +56,25 @@ export default function MatchHistory({matchs}) {
     }
   }
 
-  const TextResult = (match)=>{
-    if(match.playerWon === 0){
+  const TextResult = (match: IMatchType)=>{
+    console.log(match?.playerWon)
+    if(match?.playerWon === 0 || match?.winner === 0){
       return 'Não Finalizado'
     }
-    else if(!match.playerWon){
+    else if(!match?.playerWon){
       return `Vencedor: Time ${match.winner}`
     }
-    else if(match.playerWon === 1){
+    else if(match?.playerWon === 1){
       return 'Vitória'
     }
-    else if(match.playerWon === 2){
+    else if(match?.playerWon === 2){
       return 'Derrota'
     }
     
   }
 
-  const textResultColor = (match) => {
-    if(match.playerWon === 0){
+  const textResultColor = (match: IMatchType) => {
+    if(match.playerWon === 0 || match.winner === 0){
       return 'text-yellow-700'
     }
     else if(!match.playerWon){
@@ -92,7 +98,7 @@ export default function MatchHistory({matchs}) {
         scrollbarColor: '#4B5563 #1F2937',
       }}
     >
-      {matchs.map((match) => (
+      {matchs.map((match: IMatchType) => (
         <div 
           key={match.id} 
           className={`bg-slate-800 rounded-t-lg shadow-md cursor-pointer ${borderResult(match)}`}
@@ -104,14 +110,14 @@ export default function MatchHistory({matchs}) {
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-400">Time 1</span>
                   <div className="text-white max-w-[200px] truncate">
-                    {match.team1.map(player => player.name).join(', ')}
+                    {match.team1.map((player: Player) => player.name).join(', ')}
                   </div>
                 </div>
                 <span className="text-gray-500">vs</span>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-400">Time 2</span>
                   <div className="text-white max-w-[200px] truncate">
-                    {match.team2.map(player => player.name).join(', ')}
+                    {match.team2.map((player: Player) => player.name).join(', ')}
                   </div>
                 </div>
               </div>

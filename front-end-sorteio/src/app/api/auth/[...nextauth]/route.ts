@@ -1,8 +1,9 @@
-import NextAuth from 'next-auth';
+import NextAuth, { Session, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { server } from '@/api/server';
 import { setCookie } from "nookies";
 import {jwtDecode} from "jwt-decode";
+import { JWT } from 'next-auth/jwt';
 
 export const authOptions = {
   providers: [
@@ -13,7 +14,8 @@ export const authOptions = {
         password: { label: 'Password', type: 'password' },
         rememberMe: { label: 'Remember Me', type: 'checkbox' }, // Correção
       },
-      async authorize(credentials, req) {
+      
+      async authorize(credentials) {
         try {
           const response = await server.post("/auth/login", {
             email: credentials?.email,
@@ -25,17 +27,17 @@ export const authOptions = {
           if (response.data) {
             const { accessToken, refreshToken } = response.data;
       
-            const decoded = jwtDecode(accessToken); // Aqui pega info do token
+            const decoded = jwtDecode(accessToken); 
       
             const user = {
               id: decoded.sub,
-              name: decoded.name || "", // ajuste conforme seu payload
+              name: decoded.name || "", 
               email: decoded.email,
               accessToken,
               refreshToken,
             };
       
-            if (credentials?.rememberMe === true || credentials?.rememberMe === "true") {
+            if (Boolean(credentials?.rememberMe) === true || credentials?.rememberMe === "true") {
               setCookie(null, "accessToken", accessToken, {
                 maxAge: 7 * 24 * 60 * 60,
                 path: "/",
@@ -48,7 +50,7 @@ export const authOptions = {
                 secure: process.env.NODE_ENV === "production",
               });
             }
-      
+            
             return user;
           }
         } catch (error) {
@@ -66,7 +68,7 @@ export const authOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }){
       try {
         if (user) {
           token.accessToken = user.accessToken;
@@ -78,12 +80,10 @@ export const authOptions = {
       return token;
     },
 
-    async session({ session, token }) {
-      session.user = {
-        ...session.user,
-        accessToken: token.accessToken || null,
-        refreshToken: token.refreshToken || null,
-      };
+    async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
+      session.user = session.user || {};
+      (session.user as any).accessToken = token.accessToken || null;
+      (session.user as any).refreshToken = token.refreshToken || null;
       return session;
     },
   },

@@ -32,9 +32,10 @@ type State = {
 };
 
 type Actions = {
-  createRandomMatch: (players: Player[]) => Promise<void>;
-  createStarMatch: (players: Player[]) => Promise<void>;
-  createWinRateMatch: (players: Player[]) => Promise<void>;
+  createManualMatch: (team1: Player[], team2: Player[], router: AppRouterInstance) => Promise<void>;
+  createRandomMatch: (players: Player[], router: AppRouterInstance) => Promise<void>;
+  createStarMatch: (players: Player[], router: AppRouterInstance) => Promise<void>;
+  createWinRateMatch: (players: Player[], router: AppRouterInstance) => Promise<void>;
   deleteMatch: (id: number) => Promise<void>;
   getMatch: (id: number) => Promise<void>;
   getAllMatchs: () => Promise<void>;
@@ -52,9 +53,7 @@ export const useMatchsStore = create<State & Actions>((set) => ({
     id: 0,
     matchTime: 0,
     team1: [],
-    team2: [],
-    time1: [],
-    time2: [],
+    team2: [], 
     winner: 0,
   },
   winnerTeam: {
@@ -67,6 +66,7 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   },
   allMatchs: [],
   isLoading: false,
+  pathName: '',
 
   getMatch: async (id: number) => {
     try {
@@ -99,6 +99,7 @@ export const useMatchsStore = create<State & Actions>((set) => ({
       set({ isLoading: false });
     } catch (error) {
       set({ isLoading: false });
+      toast('Erro ao criar partida aleatória', { type: 'error' });
     }
   },
 
@@ -114,13 +115,13 @@ export const useMatchsStore = create<State & Actions>((set) => ({
       );
 
       set({ match: response.data });
-      (response.data);
 
       router.push(`/matchs/${response.data.id}`);
 
       set({ isLoading: false });
     } catch (error) {
       set({ isLoading: false });
+      toast('Erro ao criar partida por estrelas', { type: 'error' });
     }
   },
 
@@ -142,6 +143,7 @@ export const useMatchsStore = create<State & Actions>((set) => ({
       set({ isLoading: false });
     } catch (error) {
       set({ isLoading: false });
+      toast('Erro ao criar partida por taxa de vitória', { type: 'error' });
     }
   },
 
@@ -154,11 +156,13 @@ export const useMatchsStore = create<State & Actions>((set) => ({
         { winner }
       );
 
-      set({ winnerTeam: response.data, isLoading: false });
+      set({ winnerTeam: response.data});
 
       router.push('/random-draw/result/winner');
-    } catch (e) {
-      set({ isLoading: false });
+    } catch (error) {
+      toast('Erro ao definir vencedor', { type: 'error' });
+    } finally {
+      set({isLoading: true})
     }
   },
 
@@ -166,7 +170,7 @@ export const useMatchsStore = create<State & Actions>((set) => ({
     set({ isLoading: true });
     try {
       
-      server.delete(`/match/${id}`);
+      await server.delete(`/match/${id}`);
 
       set({ isLoading: false });
 
@@ -186,6 +190,26 @@ export const useMatchsStore = create<State & Actions>((set) => ({
       set({ allMatchs: response.data, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
+      toast('Erro ao buscar partidas', { type: 'error' });
     }
   },
+
+  createManualMatch: async (team1: Player[], team2: Player[], router)=>{
+    try{
+      set({isLoading: true})
+      
+      const team1Ids = team1.map((player: Player) => player.id);
+      const team2Ids = team2.map((player: Player) => player.id);
+
+      const response = await server.post('/match', { team1: team1Ids, team2: team2Ids })
+
+      set({match: response.data})
+
+      router.push(`/matchs/${response.data.id}`);
+    }catch(e){
+      console.log(e)
+    }finally{
+      set({isLoading: false})
+    }
+  }
 }));

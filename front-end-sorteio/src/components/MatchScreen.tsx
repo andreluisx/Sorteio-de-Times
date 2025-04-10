@@ -7,6 +7,7 @@ import SimpleCardPlayer from '@/components/SimpleCardPlayer';
 import { useMatchsStore } from '@/store/matchs';
 import { useParams } from 'next/navigation';
 import { CircularProgress } from '@mui/material';
+import TimeConvert from './TimeConvert';
 
 export default function MatchScreen() {
   
@@ -29,10 +30,10 @@ export default function MatchScreen() {
     if (match.team1 && match.team2) {
       const calcTeamStats = (team: Player[]) => {
         const avgRank =
-          team.reduce((sum, player) => sum + player.rank, 0) / team.length;
-        const totalStars = team.reduce((sum, player) => sum + player.stars, 0);
+          team.reduce((sum: number, player: Player) => sum + player.rank, 0) / team.length;
+        const totalStars = team.reduce((sum: number, player: Player) => sum + player.stars, 0);
         const avgWinRate =
-          team.reduce((sum, player) => sum + player.winRate, 0) / team.length;
+          team.reduce((sum: number, player: Player) => sum + player.winRate, 0) / team.length;
 
         return {
           avgRank: Math.round(avgRank * 10) / 10,
@@ -77,8 +78,8 @@ export default function MatchScreen() {
 
   if (isLoading) {
     return <div className='flex justify-center items-center w-full'>
-            <CircularProgress size={24} title="Loading" color="inherit" />
-          </div>
+      <CircularProgress size={24} title="Loading" color="inherit" />
+    </div>
   }
 
   const TeamSection = ({
@@ -90,7 +91,8 @@ export default function MatchScreen() {
     teamNumber: number;
     stats: any;
   }) => (
-    <div
+    <button
+      disabled={isLoading}
       className={`w-full flex-col z-30 flex min-h-96 lg:min-h-28 bg-gradient-to-b bg-slate-800 rounded-lg border ${
         match.winner === teamNumber ? 'border-green-600' : 'border-slate-600'
       } ${
@@ -128,7 +130,7 @@ export default function MatchScreen() {
           </div>
         ))}
       </div>
-    </div>
+    </button>
   );
 
   const RenderCenterButtons = () => {
@@ -136,8 +138,14 @@ export default function MatchScreen() {
       return (
         <div className="bg-slate-800 w-full flex justify-center items-center flex-col rounded-md p-4 border border-slate-600">
           <p>{`Vencedor: Time ${match.winner}`}</p>
+          
+          <p className='pt-1 pb-2 text-slate-300'>{new Date(match.createdAt).toLocaleDateString('pt-BR', {day: "2-digit", month: "2-digit", year: "numeric",weekday: 'long'})}</p>
+          <div className='flex flex-col justify-center items-center border-y border-slate-500 pt-2 pb-3 w-full'>
+            <p className='text-sm text-center pb-2 pt-1 text-slate-400'>horas/minutos/segundos</p>
+            <TimeConvert time={match.matchTime} />
+          </div>
           <button
-            className="mt-2 py-2 w-full bg-green-700 cursor-pointer rounded-md"
+            className="mt-3 py-2 w-full bg-green-700 cursor-pointer rounded-md"
             onClick={() => {
               window.history.go(-1);
             }}
@@ -151,11 +159,11 @@ export default function MatchScreen() {
     if (!isSelectingWinner) {
       return (
         <>
-          <div className="relative mb-4 transform transition-all hover:scale-110"></div>
-          <div className="flex flex-col gap-3 w-full max-w-xs">
+          <div className="relative mb-4 w-full flex flex-col transform transition-all hover:scale-110"></div>
+          <div className="flex flex-col gap-3 w-full lg:max-w-xs">
             <button
               onClick={handleDefineWinnerClick}
-              className="bg-gradient-to-r bg-red-800 hover:bg-red-700 font-bold py-3 px-4 rounded-lg shadow-lg cursor-pointer"
+              className="bg-gradient-to-r w-full bg-red-800 hover:bg-red-700 font-bold py-3 px-4 rounded-lg shadow-lg cursor-pointer"
             >
               Definir Vencedor
             </button>
@@ -169,7 +177,7 @@ export default function MatchScreen() {
               onClick={handleBack}
               className="bg-gradient-to-r cursor-pointer from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 font-bold py-3 px-4 rounded-lg shadow-lg"
             >
-              Voltar
+              Voltar / Excluir
             </button>
           </div>
         </>
@@ -210,7 +218,7 @@ export default function MatchScreen() {
           />
         </div>
 
-        <div className="flex flex-col justify-center items-center pt-2 pb-3 lg:w-2/12">
+        <div className="flex flex-col justify-center items-center pt-2 pb-3 w-full lg:w-2/12">
           <RenderCenterButtons />
         </div>
 

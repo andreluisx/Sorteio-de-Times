@@ -1,4 +1,4 @@
-export enum BalancedTypes {
+export enum SortedTypes {
   stars = "stars",
   winRate = "winRate",
   combined = "combined",

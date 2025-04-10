@@ -1,8 +1,6 @@
 import { Rating } from '@mui/material';
-import Player from '@/types/playerType';
 import { RankRender } from '@/utils/RanksRender';
 import StarIcon from '@mui/icons-material/Star';
-
 
 interface PlayerCardProps {
   name: string;
@@ -10,7 +8,7 @@ interface PlayerCardProps {
   matchs: number;
   stars: number;
   rank: string;
-  onClick?: (player: Player[]) => void;
+  onClick?: () => void;
 }
 
 const winRateRender = (winRate: number | undefined, matchs: number) => {
@@ -39,7 +37,14 @@ export default function PlayerCard({
   onClick,
 }: PlayerCardProps) {
   return (
-    <a className="cursor-pointer" onClick={onClick}>
+    <a
+      className="cursor-pointer"
+      onClick={() => {
+        if (onClick) {
+          onClick();
+        }
+      }}
+    >
       <div className="w-full flex-row transform transition-transform hover:scale-105 flex gap-0 max-lg:gap-10 justify-between bg-gradient-to-bl from-red-600 to-black rounded-md p-2 shadow-slate-950 shadow-lg mb-4">
         <div>
           <div>
@@ -55,7 +60,12 @@ export default function PlayerCard({
               readOnly
               defaultValue={stars}
               max={10}
-              emptyIcon={<StarIcon style={{ opacity: 0.9, color:'#121a31' }} fontSize="inherit" />}
+              emptyIcon={
+                <StarIcon
+                  style={{ opacity: 0.9, color: '#121a31' }}
+                  fontSize="inherit"
+                />
+              }
             />
             <p className="text-sm pl-2 text-yellow-400">{stars}</p>
           </div>

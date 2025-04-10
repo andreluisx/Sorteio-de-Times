@@ -1,7 +1,7 @@
 "use client";
 import { Roboto } from 'next/font/google';
 import './globals.css';
-import NavbarTheme from '@/components/NavBar';
+import NavbarTheme from '@/components/NavBar/NavBar';
 import SideBar from '@/components/SideBar';
 import { usePathname } from "next/navigation";
 import Footer from '@/components/Footer';
@@ -16,10 +16,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const UserPage = pathname === "/auth/login" || pathname === "/auth/register" || pathname === "/";
+  const noSideBar = ["/auth/login", "/auth/register", "/"]
+  const info = "/info"
+  const NoSideBarPaths = (noSideBar.includes(pathname) || pathname.startsWith(info) );
 
   return (
     <html lang="en" className="dark">
+      <title>TeamDraft</title>
+      
       <head>
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
         <script
@@ -42,7 +46,7 @@ export default function RootLayout({
             theme="dark"
           />
           <div className="flex-row flex pr-1">
-            {!UserPage && <SideBar />}
+            {!NoSideBarPaths && <SideBar />}
             {children}
           </div>
 

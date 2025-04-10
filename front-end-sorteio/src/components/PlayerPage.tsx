@@ -182,7 +182,7 @@ const PlayerPage = () => {
           />
           
           <button
-            className="w-full flex justify-center items-center bg-green-600 hover:bg-green-700 transition-colors rounded-md py-3 shadow shadow-black disabled:bg-slate-600 disabled:cursor-not-allowed"
+            className="cursor-pointer w-full flex justify-center items-center bg-green-600 hover:bg-green-700 transition-colors rounded-md py-3 shadow shadow-black disabled:bg-slate-600 disabled:cursor-not-allowed"
             disabled={!hasChanges() || isLoading}
             onClick={handleSave}
           >
@@ -195,7 +195,7 @@ const PlayerPage = () => {
           
           <button 
             onClick={() => setShowDeleteModal(true)}
-            className="text-red-500 hover:text-red-400 transition-colors"
+            className="cursor-pointer  text-red-500 hover:text-red-400 transition-colors"
           >
             Deletar Jogador
           </button>

@@ -8,7 +8,9 @@ import { usePlayersStore } from '@/store/players';
 import Player from '@/types/playerType';
 import { SortedTypes } from '@/types/sortedTypes';
 import { useMatchsStore } from '@/store/matchs';
+import PlayersList from './PlayersList';
 import { useRouter } from 'next/navigation';
+import { PlusIcon } from '@/svg/icons/PlusIcon';
 
 interface RandomChoiceScreenProps {
   title: string;
@@ -18,47 +20,9 @@ interface RandomChoiceScreenProps {
 const TeamSection = (
   players: Player[],
   handlePlayer: (player: Player) => void
-) => (
-  <div
-    className={`w-full flex-col z-30 flex min-h-28 lg:min-h-28 bg-gradient-to-b from-slate-700 to-slate-800 dark:from-slate-600 dark:to-slate-700 rounded-lg border border-slate-600`}
-  >
-    <div className="bg-slate-900 flex flex-row justify-between items-center rounded-t-lg p-3 border-b border-slate-600">
-      <p className='text-sm'>banco: {players.length}</p>
-      <h2 className="text-center text-xl font-bold text-white">Jogadores</h2>
-      <div className='w-14'></div>
-      
-    </div>
-    <div
-      className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3 overflow-y-auto"
-      style={{
-        maxHeight: '560px',
-        scrollbarWidth: 'thin',
-        scrollbarColor: '#4B5563 #1F2937',
-      }}
-    >
-      {players.length !== 0 ? (
-        <>
-          {players.map((player) => (
-            <div key={player.id}>
-              <PlayerCard
-                rank={player.rank}
-                matchs={player.matchs}
-                name={player.name}
-                stars={player.stars}
-                winRate={player.winRate}
-                onClick={() => handlePlayer(player)}
-              />
-            </div>
-          ))}
-        </>
-      ) : (
-        <div>
-          <p className='text-center'>Lista vazia adicione jogadores no + verde, localizado no canto inferior direito.</p>
-        </div>
-      )}
-    </div>
-  </div>
-);
+) => {return (
+  <PlayersList players={players} handlePlayer={handlePlayer}/>
+)};
 
 export default function RandomChoiceScreen({
   title,
@@ -75,12 +39,11 @@ export default function RandomChoiceScreen({
   const sizeMatchPlayersList = matchPlayers?.length;
 
   const [modal, setModal] = useState(false);
+  const router = useRouter()
 
   useEffect(() => {
     fetchPlayers();
   }, [fetchPlayers]);
-
-  const router = useRouter();
 
   const handleDrawTeams = () => {
     if (type === 'random') {
@@ -105,20 +68,9 @@ export default function RandomChoiceScreen({
         onClick={() => setModal(true)}
         className="rounded-full cursor-pointer shadow-md shadow-black fixed text-white right-8 z-40 bottom-8 h-20 w-20 bg-green-700 flex justify-center items-center"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="size-12"
-        >
-          <path
-            fillRule="evenodd"
-            d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z"
-            clipRule="evenodd"
-          />
-        </svg>
+        <PlusIcon/>
       </div>
-      <div className="justify-center flex items-center w-full">
+      <div className="justify-center flex-row gap-3 flex items-center w-full">
         <h1 className="font-bold text-3xl text-center">{title}</h1>
       </div>
       <div className="flex pb-36 flex-col-reverse w-full pt-10 justify-center pl-4 lg:justify-start items-start lg:flex-row-reverse lg:gap-1 gap-10 lg:pb-6">
