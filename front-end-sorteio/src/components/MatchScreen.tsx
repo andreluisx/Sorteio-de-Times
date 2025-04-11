@@ -206,7 +206,7 @@ export default function MatchScreen() {
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white text-center mb-8">
-        Resultado do Sorteio
+        {match.winner === 0 ? 'Resultado do Sorteio' : 'Detalhes da Partida'}
       </h1>
 
       <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">

@@ -38,7 +38,7 @@ export default function Players() {
             flexWrap: 'wrap',
             flexDirection: 'row',
           }}
-          className='lg:pt-5 pt-1 pb-10'
+          className='lg:pt-5 pt-1 pb-10 gap-4'
         >
           {allPlayers.map((player: Player) => (
             <div key={player.id} className="px-3">

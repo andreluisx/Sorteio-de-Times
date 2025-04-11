@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import PlayerCard from './PlayerCard';
 import CreateUserModal from './CreateUserModal';
 import { useEffect, useState } from 'react';
@@ -20,9 +21,9 @@ interface RandomChoiceScreenProps {
 const TeamSection = (
   players: Player[],
   handlePlayer: (player: Player) => void
-) => {return (
-  <PlayersList players={players} handlePlayer={handlePlayer}/>
-)};
+) => {
+  return <PlayersList players={players} handlePlayer={handlePlayer} />;
+};
 
 export default function RandomChoiceScreen({
   title,
@@ -39,7 +40,7 @@ export default function RandomChoiceScreen({
   const sizeMatchPlayersList = matchPlayers?.length;
 
   const [modal, setModal] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     fetchPlayers();
@@ -63,31 +64,47 @@ export default function RandomChoiceScreen({
 
   return (
     <div className="custom-bg dark:custom-bg px-3 lg:px-3 py-7 justify-start items-start flex flex-col w-full">
-      {modal ? <CreateUserModal setModal={setModal} /> : null}
-      <div
+      {modal && <CreateUserModal setModal={setModal} />}
+      
+      {/* Botão Flutuante para Adicionar Jogador */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setModal(true)}
-        className="rounded-full cursor-pointer shadow-md shadow-black fixed text-white right-8 z-40 bottom-8 h-20 w-20 bg-green-700 flex justify-center items-center"
+        className="cursor-pointer fixed z-40 bottom-8 right-8 h-16 w-16 bg-green-600 hover:bg-hreen-700 rounded-full shadow-lg shadow-black/50 flex justify-center items-center text-white"
       >
-        <PlusIcon/>
+        <PlusIcon />
+      </motion.button>
+
+      {/* Título */}
+      <div className="w-full text-center mb-3">
+        <h1 className="text-3xl font-bold text-red-500  bg-clip-text ">
+          {title}
+        </h1>
       </div>
-      <div className="justify-center flex-row gap-3 flex items-center w-full">
-        <h1 className="font-bold text-3xl text-center">{title}</h1>
-      </div>
-      <div className="flex pb-36 flex-col-reverse w-full pt-10 justify-center pl-4 lg:justify-start items-start lg:flex-row-reverse lg:gap-1 gap-10 lg:pb-6">
-        <div className="lg:w-7/12 w-full flex justify-center flex-col items-center  lg:px-1 ">
-          <div className="min-h-18 bg-gradient-to-tl from-red-900 to-black w-full rounded-md border border-slate-700">
-            <div className="flex w-full bg-red-950 justify-center items-center rounded-t-md border border-red-950">
-              <div className="flex w-full h-full justify-between">
-                <p
-                  className={`p-3 text-sm pb-2 text-center ${
+
+      {/* Área Principal */}
+      <div className="flex flex-col-reverse w-full pt-6 pb-20 lg:flex-row-reverse gap-6 lg:pb-6">
+        {/* Seção de Jogadores Selecionados */}
+        <div className="lg:w-7/12 w-full">
+          <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-2 border-red-900/50 shadow-lg shadow-red-900/10 overflow-hidden">
+            {/* Header da seção */}
+            <div className="sticky top-0 z-10 bg-gradient-to-r from-red-900/80 to-red-950/90 px-4 py-3 border-b border-red-900/50 backdrop-blur-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <span className="flex h-3 w-3 mr-2">
+                    <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                  <p className={`text-sm font-medium ${
                     sizeMatchPlayersList % 2 !== 0 || sizeMatchPlayersList === 0
-                      ? 'text-white'
-                      : 'text-green-500'
-                  }`}
-                >
-                  Partida: {matchPlayers.length} jogadores.
-                </p>
-                <div></div>
+                      ? 'text-red-300'
+                      : 'text-green-400'
+                  }`}>
+                    {matchPlayers.length} {matchPlayers.length === 1 ? 'jogador' : 'jogadores'} selecionados
+                  </p>
+                </div>
+                
                 <button
                   onClick={handleDrawTeams}
                   disabled={
@@ -95,34 +112,45 @@ export default function RandomChoiceScreen({
                     matchPlayers.length == 0 ||
                     isLoading
                   }
-                  className="px-10 py-2 disabled:bg-slate-700 cursor-pointer h-full rounded-tr-md flex bg-red-800"
+                  className={` px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    isLoading
+                      ? 'bg-slate-700 text-slate-400'
+                      : matchPlayers.length % 2 === 0 && matchPlayers.length > 0
+                      ? 'bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-900/30 cursor-pointer'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  }`}
                 >
                   {isLoading ? (
-                    <CircularProgress color="inherit" size={23} />
+                    <CircularProgress color="inherit" size={18} />
                   ) : (
-                    'Sortear'
+                    'Sortear Times'
                   )}
                 </button>
               </div>
             </div>
+
+            {/* Área dos jogadores */}
             {sizeMatchPlayersList === 0 ? (
-              <div className="px-4 flex py-4 mt-5 rounded-md min-h-26 text-slate-200 items-center justify-center">
-                <p>Adicione e Remova jogadores clicando nos seus cards</p>
+              <div className="flex flex-col items-center justify-center p-8 text-center min-h-[200px]">
+                <div className="mb-4 p-3 bg-slate-800/50 rounded-full border border-dashed border-slate-700">
+                  <PlusIcon  />
+                </div>
+                <p className="text-slate-400 max-w-[200px]">
+                  Selecione jogadores clicando nos cards ao lado
+                </p>
               </div>
             ) : (
-              <div
-                style={{
-                  maxHeight: '384px',
-                  overflowY: 'auto',
-                  paddingTop: '33px',
-                  paddingBlock: '20px',
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#4B5563 #1F2937',
-                }}
-                className="grid grid-cols-1 md:grid-cols-2 px-5"
-              >
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto custom-scrollbar">
                 {matchPlayers.map((player) => (
-                  <div key={player.id} className="px-1">
+                  <motion.div
+                    key={player.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative"
+                  >
                     <PlayerCard
                       matchs={player.matchs}
                       name={player.name}
@@ -130,14 +158,25 @@ export default function RandomChoiceScreen({
                       stars={player.stars}
                       winRate={player.winRate}
                       onClick={() => handlePlayer(player)}
+                      className="hover:border-red-500/50"
                     />
-                  </div>
+                    <button 
+                      onClick={() => handlePlayer(player)}
+                      className="absolute -top-2 -right-2 z-10 bg-red-600 hover:bg-red-700 rounded-full p-1 shadow-md"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </motion.div>
                 ))}
               </div>
             )}
           </div>
         </div>
-        <div className="lg:w-5/12 w-full lg:px:0 lg:pr-6 flex justify-center items-center flex-col">
+
+        {/* Seção de Todos os Jogadores */}
+        <div className="lg:w-5/12 w-full lg:pr-0">
           {TeamSection(playersData, handlePlayer)}
         </div>
       </div>

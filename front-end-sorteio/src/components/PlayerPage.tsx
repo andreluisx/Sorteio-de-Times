@@ -156,7 +156,7 @@ const PlayerPage = () => {
             {/* Estatísticas do jogador */}
             <PlayerStats 
               winRate={player.winRate}
-              matches={player.matchs}
+              matchs={player.matchs}
               wins={player.wins}
               losses={player.loses}
               stars={editedStars}

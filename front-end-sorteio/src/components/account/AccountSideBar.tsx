@@ -1,7 +1,7 @@
 "use client"
 import React from "react";
 import Image from "next/image";
-import { User, Settings, Crown, Trash2, ChevronRight, LogOut } from "lucide-react";
+import { User, Settings, Crown, Trash2, ChevronRight } from "lucide-react";
 import { UserData, NavItem } from "@/types/account";
 
 type AccountSidebarProps = {

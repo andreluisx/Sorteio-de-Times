@@ -1,6 +1,5 @@
 "use client"
 import { useDraggable } from '@dnd-kit/core';
-import { Column as ColumnType, Task } from '@/types/TaskType';
 import PlayerCard from '@/components/PlayerCard';
 import Player from '@/types/playerType';
 

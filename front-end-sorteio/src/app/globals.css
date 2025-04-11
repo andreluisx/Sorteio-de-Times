@@ -31,11 +31,25 @@
 
 @media screen and (min-width: 1024px) and (max-width: 1357.98px) {
   .custom-gap-responsive {
-    gap: 1.5rem; /* Ajuste o valor conforme necessário */
+    gap: 1.5rem;
   }
   
-  /* Se precisar ajustar apenas o gap entre elementos específicos */
+
   .custom-gap-responsive > .text-container {
-    margin-right: 1.5rem; /* Exemplo alternativo */
+    margin-right: 1.5rem; 
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+    
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(220, 38, 38, 0.5);
+    border-radius: 3px;
   }
 }

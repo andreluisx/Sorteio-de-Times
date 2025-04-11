@@ -1,8 +1,9 @@
 interface TimeConvertProps {
-  time: number
+  time: number,
+  style?:string;
 }
 
-export default function TimeConvert ({time} : TimeConvertProps) {
+export default function TimeConvert ({time, style} : TimeConvertProps) {
   const formatTime = (time: number) => {
     const seconds = Math.floor((time / 1000) % 60);
     const minutes = Math.floor((time / 1000 / 60) % 60);
@@ -23,7 +24,7 @@ export default function TimeConvert ({time} : TimeConvertProps) {
   }
   
   return (
-  <div className='h-fit w-fit flex rounded-2xl px-3 py-1 bg-slate-700'>
+  <div className={`${style ? style : 'h-fit w-fit flex rounded-2xl px-3 py-1 bg-slate-700' }`}>
     <p>{formatTime(time)}</p>
   </div>
 )

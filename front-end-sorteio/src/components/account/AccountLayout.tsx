@@ -9,7 +9,7 @@ type AccountLayoutProps = {
 
 export default function AccountLayout({ children, sidebar, mobileMenu }: AccountLayoutProps) {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-slate-900 to-slate-800 text-white">
+    <div className=" w-full bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto flex">
         {/* Sidebar (desktop) */}
         <div className="w-64 bg-slate-800/50 border-r border-slate-700 p-6 hidden md:block">
