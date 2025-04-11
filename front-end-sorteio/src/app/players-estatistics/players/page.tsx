@@ -49,6 +49,7 @@ export default function Players() {
                 stars={player.stars}
                 winRate={player.winRate}
                 onClick={() => handlePlayer(player.id)} // Função de navegação
+                className='cursor-pointer'
               />
             </div>
           ))}

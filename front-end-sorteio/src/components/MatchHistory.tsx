@@ -1,139 +1,122 @@
 'use client';
 import { useMatchsStore } from '@/store/matchs';
-import TimeConvert from './TimeConvert';
 import { useRouter } from 'next/navigation';
-import { CircularProgress } from '@mui/material';
-import Player from '@/types/playerType';
+import { motion, AnimatePresence } from 'framer-motion';
 import { IMatchType } from '@/types/matchType';
-
-
-const formatDate = (dateString: string) => {
-  
-  if (typeof window !== 'undefined') {
-    const date = new Date(dateString);
-    const months = [
-      'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 
-      'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
-    ];
-
-    return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
-  }
-  return dateString;
-};
+import { TrophyIcon, ClockIcon, CalendarIcon, FireIcon } from '@/components/ui/Icons';
+import MatchFooter from './match/MatchHistory/MatchFooter';
+import MatchTeams from './match/MatchHistory/MatchTeams';
+import MatchLoading from './match/MatchHistory/MatchLoading';
+import MatchEmpty from './match/MatchHistory/MatchEmpty';
+import { formatDate } from './match/MatchHistory/utils';
 
 interface MatchHistoryProps {
-  matchs: IMatchType[],
+  matchs: IMatchType[];
+  enhanced?: boolean;
 }
 
-export default function MatchHistory({matchs}: MatchHistoryProps) {
+export default function MatchHistory({ matchs, enhanced = true }: MatchHistoryProps) {
   const { isLoading } = useMatchsStore();
   const router = useRouter();
 
   const handleMatchClick = (id: number) => {
-    router.push(`/matchs/${id}`)
-  }
+    router.push(`/matchs/${id}`);
+  };
+
+  const getMatchResult = (match: IMatchType) => {
+    if (match?.playerWon === 0 || match?.winner === 0) {
+      return { 
+        text: 'Em Andamento', 
+        color: 'bg-amber-500/20 text-amber-400',
+        border: 'border-amber-500/30',
+        icon: <ClockIcon className="text-amber-400" />
+      };
+    } else if (!match?.playerWon) {
+      return { 
+        text: `Time ${match.winner} Venceu`, 
+        color: 'bg-blue-500/20 text-blue-400',
+        border: 'border-blue-500/30',
+        icon: <TrophyIcon className="text-blue-400" />
+      };
+    } else if (match?.playerWon === 1) {
+      return { 
+        text: 'Vitória', 
+        color: 'bg-green-500/20 text-green-400',
+        border: 'border-green-500/30',
+        icon: <FireIcon className="text-green-400" />
+      };
+    } else if (match?.playerWon === 2) {
+      return { 
+        text: 'Derrota', 
+        color: 'bg-red-500/20 text-red-400',
+        border: 'border-red-500/30',
+        icon: <FireIcon className="text-red-400" />
+      };
+    }
+    return { 
+      text: 'Sem Resultado', 
+      color: 'bg-gray-500/20 text-gray-400',
+      border: 'border-gray-500/30',
+      icon: null
+    };
+  };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-full">
-          <CircularProgress size={35} title="Loading..." color="inherit" />
-      </div>
+      <MatchLoading/>
     );
   }
 
-  const borderResult = (match: IMatchType)=>{
-    if(!match){
-      return ''
-    }
-    else if(match.playerWon === 1){
-      return 'border border-green-800'
-    }
-    else if(match.playerWon === 2){
-      return 'border border-red-800'
-    }
-    else if(match.playerWon === 0){
-      return 'border border-yellow-800'
-    }
+  if (matchs.length === 0) {
+    return (
+      <MatchEmpty/>
+    );
   }
-
-  const TextResult = (match: IMatchType)=>{
-    console.log(match?.playerWon)
-    if(match?.playerWon === 0 || match?.winner === 0){
-      return 'Não Finalizado'
-    }
-    else if(!match?.playerWon){
-      return `Vencedor: Time ${match.winner}`
-    }
-    else if(match?.playerWon === 1){
-      return 'Vitória'
-    }
-    else if(match?.playerWon === 2){
-      return 'Derrota'
-    }
-    
-  }
-
-  const textResultColor = (match: IMatchType) => {
-    if(match.playerWon === 0 || match.winner === 0){
-      return 'text-yellow-700'
-    }
-    else if(!match.playerWon){
-      return `text-green-500`
-    }
-    else if(match.playerWon === 1){
-      return 'text-green-700'
-    }
-    else if(match.playerWon === 2){
-      return 'text-red-700'
-    }
-  }
-  
 
   return (
-    <div
-      className="p-1 lg:p-4 grid w-full max-w-4xl mx-auto grid-cols-1 gap-4 overflow-y-auto"
+    <div 
+      className="w-full overflow-y-auto custom-scrollbar"
       style={{
-        maxHeight: '560px',
-        scrollbarWidth: 'thin',
-        scrollbarColor: '#4B5563 #1F2937',
+        height: 'calc(300vh - 200px)',
+        maxHeight: '1000px',
       }}
     >
-      {matchs.map((match: IMatchType) => (
-        <div 
-          key={match.id} 
-          className={`bg-slate-800 rounded-t-lg shadow-md cursor-pointer ${borderResult(match)}`}
-          onClick={()=>handleMatchClick(match.id)}
-        >
-          <div className="px-6 py-4 border-b border-slate-700">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-4 flex-col flex-wrap lg:flex-row">
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-400">Time 1</span>
-                  <div className="text-white max-w-[200px] truncate">
-                    {match.team1.map((player: Player) => player.name).join(', ')}
+      <div className="grid grid-cols-1 gap-3 p-2 md:p-4 min-h-min">
+        <AnimatePresence>
+          {matchs.map((match: IMatchType) => {
+            const result = getMatchResult(match);
+            
+            return (
+              <motion.div
+                key={match.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className={`relative group rounded-xl cursor-pointer overflow-hidden shadow-lg ${result.border} border`}
+                onClick={() => handleMatchClick(match.id)}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-800/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className={`px-4 py-3 flex justify-between items-center ${result.color}`}>
+                  <div className="flex items-center gap-2">
+                    {result.icon}
+                    <span className="font-semibold">{result.text}</span>
+                  </div>
+                  <div className="text-sm flex items-center gap-2">
+                    <CalendarIcon className="text-slate-400 size-4" />
+                    <span className="text-slate-300">{formatDate(match.createdAt)}</span>
                   </div>
                 </div>
-                <span className="text-gray-500">vs</span>
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-400">Time 2</span>
-                  <div className="text-white max-w-[200px] truncate">
-                    {match.team2.map((player: Player) => player.name).join(', ')}
-                  </div>
-                </div>
-              </div>
-              <div className={`text-right ${textResultColor(match)} font-semibold`}>
-                {TextResult(match)}
-              </div>
-            </div>
-          </div>
-          <div className="px-6 py-3 bg-slate-900 flex justify-between items-center">
-            <TimeConvert time={match.matchTime}/>
-            <span className="text-sm text-gray-400">
-              {formatDate(match.createdAt)}
-            </span>
-          </div>
-        </div>
-      ))}
+                
+                <MatchTeams team1={match.team1} team2={match.team2} enhanced={enhanced} />
+                
+                <MatchFooter matchTime={match.matchTime} matchId={match.id} enhanced={enhanced} />
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
