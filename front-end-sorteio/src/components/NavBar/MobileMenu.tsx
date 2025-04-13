@@ -5,8 +5,10 @@ import Link from 'next/link';
 import MouseClick from '@/svg/icons/MouseClick';
 import Status from '@/svg/icons/Status';
 import Clock from '@/svg/icons/Clock';
+import Account from '@/svg/icons/Account';
 
 const mobileLinks = [
+  { href: '/info/account', text: 'Minha Conta', icon: <Account/>},
   { href: '/random-draw', text: 'Sorteio Aleatório', icon: <Cube /> },
   { href: '/star-balanced', text: 'Balanceado por Estrelas', icon: <Star /> },
   {
@@ -15,7 +17,6 @@ const mobileLinks = [
     icon: <WinRate />,
   },
   { href: '/user-choice', text: 'Você Escolhe os Times', icon: <MouseClick /> },
-  // ... outros links
 ];
 
 const mobileExtra = [

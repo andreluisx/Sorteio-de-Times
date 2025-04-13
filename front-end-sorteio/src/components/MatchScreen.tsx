@@ -7,7 +7,9 @@ import SimpleCardPlayer from '@/components/SimpleCardPlayer';
 import { useMatchsStore } from '@/store/matchs';
 import { useParams } from 'next/navigation';
 import { CircularProgress } from '@mui/material';
-import TimeConvert from './TimeConvert';
+import { Trophy, CalendarDays, Clock, ArrowLeft, X, Copy, GamepadIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import TimeConvert from './match/MatchHistory/TimeConvert';
 
 export default function MatchScreen() {
   
@@ -136,69 +138,165 @@ export default function MatchScreen() {
   const RenderCenterButtons = () => {
     if (match.winner !== 0) {
       return (
-        <div className="bg-slate-800 w-full flex justify-center items-center flex-col rounded-md p-4 border border-slate-600">
-          <p>{`Vencedor: Time ${match.winner}`}</p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="relative bg-gradient-to-br w-full from-slate-800 to-slate-900 rounded-xl p-3 border-2 border-slate-700 shadow-2xl shadow-black/50 overflow-hidden"
+        >
+          {/* Efeito de brilho */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-500/10 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
           
-          <p className='pt-1 pb-2 text-slate-300'>{new Date(match.createdAt).toLocaleDateString('pt-BR', {day: "2-digit", month: "2-digit", year: "numeric",weekday: 'long'})}</p>
-          <div className='flex flex-col justify-center items-center border-y border-slate-500 pt-2 pb-3 w-full'>
-            <p className='text-sm text-center pb-2 pt-1 text-slate-400'>horas/minutos/segundos</p>
-            <TimeConvert time={match.matchTime} />
+          {/* Cabeçalho com resultado */}
+          <div className={`text-center mb-6 ${match.winner === 1 ? 'text-green-400' : 'text-red-400'}`}>
+            <Trophy className="w-12 h-12 mx-auto mb-3" />
+            <h3 className="text-2xl font-bold">
+              {match.winner === 1 ? 'Time 1 Venceu!' : 'Time 2 Venceu!'}
+            </h3>
+            <div className="flex justify-center mt-2">
+              <div className={`w-24 h-1 rounded-full ${match.winner === 1 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            </div>
           </div>
-          <button
-            className="mt-3 py-2 w-full bg-green-700 cursor-pointer rounded-md"
-            onClick={() => {
-              window.history.go(-1);
-            }}
+  
+          {/* Detalhes da partida */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-center gap-2 text-slate-300">
+              <CalendarDays className="w-5 h-5 lg:hidden" />
+              <p className="text-lg text-center">
+                {new Date(match.createdAt).toLocaleDateString('pt-BR', {
+                  day: "2-digit", 
+                  month: "2-digit", 
+                  year: "numeric",
+                  weekday: 'long'
+                })}
+              </p>
+            </div>
+  
+            <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+              <div className="flex items-center justify-center gap-2">
+                <Clock className="w-5 h-5 text-slate-400" />
+                <p className="text-sm text-slate-400 text-center">Duração da partida</p>
+              </div>
+              <div className="mt-2 text-center">
+                <TimeConvert time={match.matchTime}/>
+              </div>
+            </div>
+          </div>
+  
+          {/* Botão Voltar */}
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => window.history.go(-1)}
+            className="cursor-pointer w-full py-3 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 rounded-lg text-white font-medium transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
           >
+            <ArrowLeft className="w-5 h-5" />
             Voltar
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       );
     }
-
+  
     if (!isSelectingWinner) {
       return (
-        <>
-          <div className="relative mb-4 w-full flex flex-col transform transition-all hover:scale-110"></div>
-          <div className="flex flex-col gap-3 w-full lg:max-w-xs">
-            <button
-              onClick={handleDefineWinnerClick}
-              className="bg-gradient-to-r w-full bg-red-800 hover:bg-red-700 font-bold py-3 px-4 rounded-lg shadow-lg cursor-pointer"
-            >
-              Definir Vencedor
-            </button>
-            <button
-              onClick={handleCopyClick}
-              className="bg-gradient-to-r cursor-pointer from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 font-bold py-3 px-4 rounded-lg shadow-lg"
-            >
-              Copiar Times
-            </button>
-            <button
-              onClick={handleBack}
-              className="bg-gradient-to-r cursor-pointer from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 font-bold py-3 px-4 rounded-lg shadow-lg"
-            >
-              Voltar / Excluir
-            </button>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="relative bg-gradient-to-br w-full from-slate-800 to-slate-900 rounded-xl p-4 border-2 border-slate-700 shadow-xl shadow-black/40 overflow-hidden"
+        >
+          {/* Efeito de brilho sutil */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+          
+          {/* Cabeçalho */}
+          <div className="text-center mb-5">
+            <GamepadIcon className="w-10 h-10 mx-auto mb-2 text-yellow-400" />
+            <h3 className="text-xl font-bold text-slate-200">Partida em Andamento</h3>
+            <div className="flex justify-center mt-2">
+              <div className="w-20 h-1 rounded-full bg-yellow-500"></div>
+            </div>
           </div>
-        </>
+  
+          {/* Conjunto de botões com animação */}
+          <div className="flex flex-col gap-3 w-full">
+            <motion.button
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleDefineWinnerClick}
+              className="bg-gradient-to-r w-full from-red-700 to-red-900 hover:from-red-600 hover:to-red-800 font-bold py-3 px-4 rounded-lg shadow-lg cursor-pointer transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <Trophy className="w-5 h-5" />
+              Definir Vencedor
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleCopyClick}
+              className="bg-gradient-to-r cursor-pointer w-full from-green-600 to-emerald-700 hover:from-green-500 hover:to-emerald-600 font-bold py-3 px-4 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <Copy className="w-5 h-5" />
+              Copiar Times
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleBack}
+              className="bg-gradient-to-r cursor-pointer w-full from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 font-bold py-3 px-4 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Voltar / Excluir
+            </motion.button>
+          </div>
+        </motion.div>
       );
     } else if (isSelectingWinner) {
       return (
-        <div className="bg-slate-800 bg-opacity-90 p-6 rounded-lg max-w-md shadow-lg">
-          <h2 className="font-bold mb-4 text-2xl text-white text-center">
-            Selecione o time vencedor
-          </h2>
-          <p className="mb-6 text-white text-sm text-center">
-            Clique em um dos times para definir o vencedor da partida. Não pode
-            alterar depois.
-          </p>
-          <button
-            className="w-full px-4 py-2 bg-red-700 hover:bg-red-600 cursor-pointer rounded-md text-white"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="relative bg-gradient-to-br w-full from-slate-800 to-slate-900 rounded-xl p-5 border-2 border-slate-700 shadow-2xl shadow-black/50 overflow-hidden"
+        >
+          {/* Efeito de brilho pulsante */}
+          <motion.div 
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-500/20 via-transparent to-transparent"
+            animate={{ opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          ></motion.div>
+          
+          {/* Cabeçalho estilizado */}
+          <div className="text-center mb-6">
+            <motion.div
+              animate={{ rotate: [0, 5, 0, -5, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Trophy className="w-12 h-12 mx-auto mb-3 text-red-500" />
+            </motion.div>
+            <h2 className="font-bold mb-2 text-2xl text-white">
+              Selecione o time vencedor
+            </h2>
+            <div className="flex justify-center mt-1 mb-3">
+              <div className="w-24 h-1 rounded-full bg-red-500"></div>
+            </div>
+            <p className="mb-5 text-slate-300 text-sm">
+              Clique em um dos times para definir o vencedor da partida. Não pode
+              alterar depois.
+            </p>
+          </div>
+  
+          {/* Botão de cancelar com efeito */}
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => setIsSelectingWinner(false)}
+            className="w-full px-4 py-3 bg-gradient-to-r from-red-700 to-red-900 hover:from-red-600 hover:to-red-800 rounded-lg text-white font-medium shadow-lg cursor-pointer transition-all duration-200 flex items-center justify-center gap-2"
           >
+            <X className="w-5 h-5" />
             Cancelar
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       );
     }
   };
@@ -206,11 +304,11 @@ export default function MatchScreen() {
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-white text-center mb-8">
-        {match.winner === 0 ? 'Resultado do Sorteio' : 'Detalhes da Partida'}
+        {match.winner === 0 ? 'Partida Criada' : 'Detalhes da Partida'}
       </h1>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-        <div className="w-full lg:w-5/12 relative z-20">
+      <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+        <div className="w-full lg:w-fit relative z-20">
           <TeamSection
             team={match.team1}
             teamNumber={1}
@@ -218,11 +316,11 @@ export default function MatchScreen() {
           />
         </div>
 
-        <div className="flex flex-col justify-center items-center pt-2 pb-3 w-full lg:w-2/12">
+        <div className="flex flex-col justify-center items-center pt-2 pb-3 w-full lg:w-60">
           <RenderCenterButtons />
         </div>
 
-        <div className="w-full lg:w-5/12 relative z-20">
+        <div className="w-full lg:w-fit relative z-20">
           <TeamSection
             team={match.team2}
             teamNumber={2}

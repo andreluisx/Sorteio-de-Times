@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AccountLayout from "@/components/account/AccountLayout";
 import AccountMobileMenu from "@/components/account/AccountMobileMenu";
 import { UserData } from "@/types/account";
@@ -10,9 +10,13 @@ import AccountSidebar from '@/components/account/AccountSideBar';
 import PremiumTab from '@/components/account/PremiumTab';
 import DeleteAccountTab from '@/components/account/DeleteAccountTab';
 import { useSession } from 'next-auth/react';
+import { redirect, useRouter } from 'next/navigation';
+import { useUsersStore } from '@/store/user';
 
 export default function AccountPage() {
-  const { data } = useSession();
+  const { data, status } = useSession();
+  const router = useRouter();
+  const { checkUser, user } = useUsersStore();
   const [activeTab, setActiveTab] = useState<string>("meus-dados");
   const [userData, setUserData] = useState<UserData>({
     email: data?.user?.email ?? 'example@email.com',
@@ -22,6 +26,15 @@ export default function AccountPage() {
     notificationsEnabled: true,
     twoFactorAuth: false
   });
+
+  useEffect(()=>{
+    checkUser()
+    if(user === null){
+      redirect('/auth/login')
+    }
+  }, [])
+
+  
 
   const renderTabContent = () => {
     switch (activeTab) {

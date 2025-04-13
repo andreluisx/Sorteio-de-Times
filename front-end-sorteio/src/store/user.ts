@@ -7,6 +7,7 @@ import { AxiosError } from 'axios';
 
 type State = {
   token: string | undefined;
+  user: { id: string; email: string } | null;
   refreshToken: string | undefined;
   isLoading: boolean;
   error: boolean;
@@ -19,7 +20,7 @@ type Actions = {
     password: string,
     router: AppRouterInstance
   ) => Promise<void>;
-  authCheck: (token: string) => Promise<void>;
+  checkUser: () => Promise<void>;
   logout: () => void;
   register: (
     email: string,
@@ -35,6 +36,7 @@ export const useUsersStore = create<State & Actions>((set) => ({
   isLoading: false,
   error: false,
   userAuthenticated: false,
+  user: {id: '', email: ''},
 
   login: async (email: string, password: string, router: AppRouterInstance) => {
     set({ isLoading: true, error: false });
@@ -92,15 +94,15 @@ export const useUsersStore = create<State & Actions>((set) => ({
     window.location.href = '/auth/login';
   },
 
-  authCheck: async () => {
+  checkUser: async () => {
     set({ isLoading: true });
-    const token = localStorage.getItem('userToken');
-    if (token) {
-      set({ userAuthenticated: true, isLoading: false });
-    } else {
-      toast('Login expirado.', { type: 'error' });
-
-      set({ isLoading: false, userAuthenticated: false });
+    try {
+      const response = await server.get('/auth/me');
+      set({user: response?.data});
+    } catch (error) {
+      set({user: null});
+    }finally{
+      set({isLoading: false});
     }
   },
 }));

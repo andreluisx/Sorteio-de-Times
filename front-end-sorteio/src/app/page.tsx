@@ -1,7 +1,5 @@
 "use client";
 
-import homepageImage from '@/constants/home/home.png'
-
 import { useState } from "react";
 import { 
   Star, 
@@ -43,7 +41,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="bg-slate-800 p-3 rounded-xl border border-slate-700">
-              <Image height={550} width={550} src={homepageImage} alt="Demonstração da plataforma" className="rounded-lg" />
+              <Image height={550} width={550} src={'/home/home.png'} alt="Demonstração da plataforma" className="rounded-lg" />
             </div>
           </div>
         </div>
@@ -215,8 +213,8 @@ export default function LandingPage() {
                         </li>
                       </ul>
                     </div>
-                    <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                    <Image height={450} width={450} src={homepageImage} alt="Demonstração da plataforma" className="rounded-lg" />
+                    <div className="bg-slate-800 p-4 flex justify-center items-center rounded-lg border border-slate-700">
+                      <Image height={450} width={450} src={'/home/match.png'} alt="Demonstração da plataforma" className="rounded-lg" />
                     </div>
                   </div>
                 )}
@@ -243,8 +241,8 @@ export default function LandingPage() {
                         </li>
                       </ul>
                     </div>
-                    <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                      <Image height={450} width={450} src={homepageImage} alt="Demonstração da plataforma" className="rounded-lg" />
+                    <div className="bg-slate-800 p-4 flex justify-center items-center rounded-lg border border-slate-700">
+                      <Image height={450} width={450} src={'/home/rank.png'} alt="Demonstração da plataforma" className="rounded-lg" />
                     </div>
                   </div>
                 )}
@@ -271,8 +269,8 @@ export default function LandingPage() {
                         </li>
                       </ul>
                     </div>
-                    <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                      <Image height={450} width={450} src={homepageImage} alt="Demonstração da plataforma" className="rounded-lg" />
+                    <div className="bg-slate-800 p-4 flex justify-center items-center rounded-lg border border-slate-700">
+                      <Image height={450} width={450} src={'/home/player.png'} alt="Demonstração da plataforma" className="rounded-lg" />
                     </div>
                   </div>
                 )}

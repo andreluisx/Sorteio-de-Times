@@ -153,7 +153,7 @@ export class PlayersService {
     const balanced = allPlayers
       .filter((player) => {
         const difference = Math.abs(player.idealStar - player.stars);
-        return difference <= 3;
+        return difference <= 3 && difference > 1;
       })
       .map((player) => {
         return {

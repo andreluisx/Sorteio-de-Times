@@ -99,7 +99,7 @@ const PlayerPage = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex flex-col items-center justify-center min-h-[300px] gap-4"
+        className="flex flex-col items-center w-full justify-center min-h-[300px] gap-4"
       >
         <div className="text-red-500">
           <svg
