@@ -44,4 +44,7 @@ export class Match {
 
   @Column({ nullable: true })
   userId: string;
+
+  @Column('simple-json', { nullable: true })
+  pointsChanges: Record<string, number>; // { [playerId]: pointsChange }
 }

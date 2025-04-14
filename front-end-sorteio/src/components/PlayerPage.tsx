@@ -4,7 +4,7 @@ import { CircularProgress, Rating } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RankRender } from '@/utils/RanksRender';
+import { RankRender } from '@/components/RanksRender';
 import { usePlayersStore } from '@/store/players';
 import MatchHistory from './MatchHistory';
 import { ConfirmationModal } from './ui/ConfirmationModal';
@@ -65,13 +65,13 @@ const PlayerPage = () => {
   };
 
   const handleSave = () => {
-    console.log('BOTAO FOI CLICADO')
+    console.log('BOTAO FOI CLICADO');
     if (player && hasChanges()) {
       updatePlayer(player.id, editedName, editedStars);
       setIsEditing(false);
     }
   };
-  
+
   const handleDelete = async () => {
     if (id) {
       await deletePlayer(String(id), router);
@@ -242,26 +242,75 @@ const PlayerPage = () => {
                 </div>
               </div>
 
-              {/* Barra de Nível */}
+              {/* Barra de Nível com Marcadores de Rank */}
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-slate-400">
-                    Nível do Jogador
+                    Pontos de Liga
                   </span>
                   <span className="text-xl font-bold text-amber-400">
-                    {editedStars.toFixed(1)}
+                    {player.points}
                   </span>
                 </div>
 
                 <div className="relative h-3 bg-slate-800 rounded-full overflow-hidden">
+                  {/* Barra de progresso animada */}
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${editedStars * 10}%` }}
+                    animate={{ width: `${(player.points / 2000) * 100}%` }}
                     transition={{ duration: 1 }}
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full z-10"
                   ></motion.div>
+
+                  {/* Marcadores de rank (linhas verticais) */}
+                  <div className="absolute inset-0 flex justify-between">
+                    {/* Ferro (0-999) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(600 / 2000) * 100}%` }}
+                    ></div>
+                    {/* Bronze (1000-1199) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(800 / 2000) * 100}%` }}
+                    ></div>
+                    {/* Prata (1000-1199) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(1000 / 2000) * 100}%` }}
+                    ></div>
+                    {/* Ouro (1200-1399) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(1200 / 2000) * 100}%` }}
+                    ></div>
+                    {/* Esmeralda (1400-1599) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(1400 / 2000) * 100}%` }}
+                    ></div>
+                    {/* Diamante (1600-1799) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(1600 / 2000) * 100}%` }}
+                    ></div>
+                    {/* Mestre (1800-1999) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(1800 / 2000) * 100}%` }}
+                    ></div>
+                    {/* Grão-Mestre (1800-1999) */}
+                    <div
+                      className="w-px h-full bg-white opacity-20"
+                      style={{ left: `${(2000 / 2000) * 100}%` }}
+                    ></div>
+                  </div>
+
+                  {/* Efeito de brilho */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white opacity-10"></div>
                 </div>
+
+               
 
                 <div className="mt-5 flex justify-center items-center">
                   <Rating
@@ -285,7 +334,7 @@ const PlayerPage = () => {
               <AnimatePresence>
                 {hasChanges() && (
                   <motion.button
-                    type='button'
+                    type="button"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}

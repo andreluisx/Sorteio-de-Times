@@ -152,6 +152,7 @@ export default function RandomChoiceScreen({
                     className="relative"
                   >
                     <PlayerCard
+                      points={player.points}
                       matchs={player.matchs}
                       name={player.name}
                       rank={player.rank}

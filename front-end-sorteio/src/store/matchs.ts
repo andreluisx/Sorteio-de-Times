@@ -2,8 +2,8 @@
 import { create } from 'zustand';
 import { server } from '@/api/server';
 import { toast } from 'react-toastify';
-import Player from '@/types/playerType';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import Player from '@/types/playerType';
 
 export interface MatchType {
   createdAt: string;
@@ -13,14 +13,20 @@ export interface MatchType {
   team2: Player[];
   winner: number;
 }
+export interface ITeamPlayer {
+  id: number;
+  teamNumber: number;
+  player: Player;
+}
 
 interface WinnerType {
   createdAt: string;
   id: number;
   matchTime: number;
-  teamPlayers: Player[];
+  teamPlayers: ITeamPlayer[];
   winner: number;
   userId: string;
+  winnerPoints: number;
 }
 
 type State = {
@@ -60,6 +66,7 @@ export const useMatchsStore = create<State & Actions>((set) => ({
     createdAt: '',
     id: 0,
     matchTime: 0,
+    winnerPoints: 0,
     teamPlayers: [],
     winner: 0,
     userId: '',

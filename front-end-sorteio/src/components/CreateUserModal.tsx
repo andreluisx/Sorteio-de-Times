@@ -1,6 +1,5 @@
 'use client'
 import Image from 'next/image';
-import iron from '@/constants/ranks/iron.png'
 import { Rating } from '@mui/material';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -56,7 +55,7 @@ export default function CreateUserModal({ setModal }: ModalProps) {
         {/* Botão de fechar */}
         <button
           onClick={() => setModal(false)}
-          className="absolute top-4 right-4 z-10 p-1 rounded-full bg-slate-800 hover:bg-red-900/50 transition-colors"
+          className="cursor-pointer absolute top-4 right-4 z-10 p-1 rounded-full bg-slate-800 hover:bg-red-900/50 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 text-slate-300 hover:text-white">
             <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
@@ -131,9 +130,9 @@ export default function CreateUserModal({ setModal }: ModalProps) {
           </div>
           
           {/* Imagem do rank */}
-          <div className="relative w-32 h-32 mb-4">
+          <div className="relative w-32 h-32 mb-2">
             <Image
-              src={iron}
+              src='/ranks/silver.png'
               alt="Rank Ferro"
               fill
               className="object-contain"
@@ -141,7 +140,8 @@ export default function CreateUserModal({ setModal }: ModalProps) {
           </div>
           
           {/* Nome do rank */}
-          <span className="text-amber-200 text-xl font-bold mb-3">Ferro</span>
+          <span className="text-slate-400 text-xl font-bold">Prata</span>
+          <span className="text-slate-200 text-md font-bold mb-4">1000 pts</span>
           
           {/* Visualização das estrelas */}
           <Rating

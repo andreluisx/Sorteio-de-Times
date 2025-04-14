@@ -14,7 +14,7 @@ import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 import { RandomMatchDto } from './dto/create-random-match.dto';
 import { ListService } from './list.service';
 import { BalancedTypes } from './utils/balanced-types.enum';
-import {v4 as uuid} from 'uuid'
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class MatchsService {
@@ -135,6 +135,7 @@ export class MatchsService {
     const team1 = match.teamPlayers
       .filter((tp) => tp.teamNumber === 1)
       .map((tp) => ({
+        points: tp.player.points,
         id: tp.player?.id || uuid(),
         name: tp.player?.name || 'Jogador Deletado',
         stars: tp.player?.stars || 0,
@@ -146,6 +147,7 @@ export class MatchsService {
     const team2 = match.teamPlayers
       .filter((tp) => tp.teamNumber === 2)
       .map((tp) => ({
+        points: tp.player.points,
         id: tp.player?.id || uuid(),
         name: tp.player?.name || 'Jogador Deletado',
         stars: tp.player?.stars || 0,
@@ -166,72 +168,112 @@ export class MatchsService {
   }
 
   async update(id: number, updateMatchDto: UpdateMatchDto) {
-    const match = await this.matchsRepository.findOneBy({ id });
+    // 1. Busca a partida com os relacionamentos
+    const match = await this.matchsRepository.findOne({
+      where: { id },
+      relations: ['teamPlayers', 'teamPlayers.player'],
+    });
 
     if (!match) {
-      throw new NotFoundException('Partida não encontrada.');
+      throw new NotFoundException('Partida não encontrada');
     }
 
-    // Verificamos se estamos definindo um vencedor (onde antes não havia)
-    // OU se estamos mudando o vencedor previamente definido
+    // 2. Verifica se houve mudança no vencedor
     if (
       (match.winner === 0 && updateMatchDto.winner !== 0) ||
-      (match.winner !== 0 &&
-        updateMatchDto.winner !== match.winner &&
-        updateMatchDto.winner !== 0)
+      (match.winner !== 0 && updateMatchDto.winner !== match.winner)
     ) {
-      // Atualizamos o tempo de partida apenas se estamos definindo o vencedor pela primeira vez
+      // 3. Atualiza o tempo da partida se for a primeira definição
       if (match.winner === 0) {
-        const created = new Date(match.createdAt).getTime();
-        const updated = new Date().getTime();
-        match.matchTime = updated - created;
+        match.matchTime =
+          new Date().getTime() - new Date(match.createdAt).getTime();
       }
 
-      const winners: string[] = [];
-      const losers: string[] = [];
+      // 4. Separa vencedores e perdedores
+      const winners = match.teamPlayers
+        .filter((tp) => tp.teamNumber === updateMatchDto.winner)
+        .map((tp) => tp.player);
 
-      // Coletamos os IDs dos jogadores com base no novo valor do vencedor
-      for (const team of match.teamPlayers) {
-        if (team.teamNumber === updateMatchDto.winner) {
-          winners.push(team.player.id);
-        } else {
-          losers.push(team.player.id);
+      const losers = match.teamPlayers
+        .filter((tp) => tp.teamNumber !== updateMatchDto.winner)
+        .map((tp) => tp.player);
+
+      // 5. Cálculo do Elo
+      const avgWinnerPoints =
+        winners.reduce((sum, p) => sum + p.points, 0) / winners.length;
+      const avgLoserPoints =
+        losers.reduce((sum, p) => sum + p.points, 0) / losers.length;
+      const expectedWin =
+        1 / (1 + Math.pow(10, (avgLoserPoints - avgWinnerPoints) / 400));
+
+      const K = 140;
+      const winnerPointsChange = K * (1 - expectedWin);
+      const loserPointsChange = winnerPointsChange * -0.7; // 70% dos pontos
+
+      match.pointsChanges = {};
+
+      winners.forEach((player) => {
+        match.pointsChanges[player.id] = winnerPointsChange;
+      });
+
+      losers.forEach((player) => {
+        match.pointsChanges[player.id] = loserPointsChange;
+      });
+
+      // 6. Atualiza os jogadores no banco de dados
+      await Promise.all([
+        // Vencedores
+        this.playersRepository
+          .createQueryBuilder()
+          .update(Players)
+          .set({
+            points: () => `points + ${winnerPointsChange}`,
+            wins: () => `wins + 1`,
+          })
+          .where({ id: In(winners.map((p) => p.id)) })
+          .execute(),
+
+        // Perdedores
+        this.playersRepository
+          .createQueryBuilder()
+          .update(Players)
+          .set({
+            points: () => `points + ${loserPointsChange}`,
+            loses: () => `loses + 1`,
+          })
+          .where({ id: In(losers.map((p) => p.id)) })
+          .execute(),
+      ]);
+
+      // 7. Recarrega TODOS os dados dos jogadores atualizados
+      const updatedPlayers = await this.playersRepository.find({
+        where: { id: In([...winners, ...losers].map((p) => p.id)) },
+      });
+
+      // 8. Atualiza as referências na partida
+      match.teamPlayers.forEach((tp) => {
+        const updatedPlayer = updatedPlayers.find((p) => p.id === tp.player.id);
+        if (updatedPlayer) {
+          tp.player = updatedPlayer;
         }
-      }
+      });
 
-      // Se tivermos jogadores vencedores, atualizamos seus contadores de vitórias
-      if (winners.length > 0) {
-        await this.playersRepository.update(
-          { id: In(winners) },
-          { wins: () => `wins + 1` },
-        );
-      }
-
-      // Se tivermos jogadores perdedores, atualizamos seus contadores de derrotas
-      if (losers.length > 0) {
-        await this.playersRepository.update(
-          { id: In(losers) },
-          { loses: () => `loses + 1` },
-        );
-      }
-
-      // Atualizamos o vencedor da partida
       match.winner = updateMatchDto.winner;
     }
 
-    // Salvamos as alterações da partida
+    // 9. Salva e retorna a partida com dados atualizados
     const updatedMatch = await this.matchsRepository.save(match);
 
-    // Retornamos a partida atualizada com os dados dos jogadores
     return {
       ...updatedMatch,
+      winnerPoints: match.pointsChanges,
       teamPlayers: updatedMatch.teamPlayers.map((team) => ({
         ...team,
         player: {
           ...team.player,
-          matchs: team.player.matchs,
-          winRate: Math.ceil(team.player.winRate),
+          points: team.player.points,
           rank: team.player.rank,
+          winRate: Math.ceil(team.player.winRate) || 0,
         },
       })),
     };
@@ -294,6 +336,7 @@ export class MatchsService {
       const team1R = team1.map((player) => {
         return {
           name: player.name,
+          points: player.points,
           stars: player.stars,
           winRate: Math.ceil(player.winRate),
           matchs: player.matchs,
@@ -303,6 +346,7 @@ export class MatchsService {
       const team2R = team2.map((player) => {
         return {
           name: player.name,
+          points: player.points,
           stars: player.stars,
           winRate: Math.ceil(player.winRate),
           matchs: player.matchs,
@@ -375,6 +419,7 @@ export class MatchsService {
       const team1R = team1.map((player) => {
         return {
           name: player.name,
+          points: player.points,
           stars: player.stars,
           winRate: Math.ceil(player.winRate),
           matchs: player.matchs,
@@ -384,6 +429,7 @@ export class MatchsService {
       const team2R = team2.map((player) => {
         return {
           name: player.name,
+          points: player.points,
           stars: player.stars,
           winRate: Math.ceil(player.winRate),
           matchs: player.matchs,
@@ -456,6 +502,7 @@ export class MatchsService {
       const team1R = team1.map((player) => {
         return {
           name: player.name,
+          points: player.points,
           stars: player.stars,
           winRate: Math.ceil(player.winRate),
           matchs: player.matchs,
@@ -465,6 +512,7 @@ export class MatchsService {
       const team2R = team2.map((player) => {
         return {
           name: player.name,
+          points: player.points,
           stars: player.stars,
           winRate: Math.ceil(player.winRate),
           matchs: player.matchs,
@@ -484,57 +532,76 @@ export class MatchsService {
     }
   }
 
-  async PlayerMatchs(id: string) {
+  async PlayerMatchs(id: string, tokenPayloadDto: TokenPayloadDto) {
     try {
       const matches = await this.matchsRepository
         .createQueryBuilder('match')
-        .innerJoinAndSelect('match.teamPlayers', 'teamPlayer') // Carrega todos os TeamPlayers
-        .innerJoinAndSelect('teamPlayer.player', 'player') // Carrega todos os Players
-        .leftJoinAndSelect('match.teamPlayers', 'allTeamPlayers') // Carrega todos os TeamPlayers novamente
-        .leftJoinAndSelect('allTeamPlayers.player', 'allPlayers') // Carrega todos os Players novamente
+        .innerJoinAndSelect('match.teamPlayers', 'teamPlayer')
+        .innerJoinAndSelect('teamPlayer.player', 'player')
+        .leftJoinAndSelect('match.teamPlayers', 'allTeamPlayers')
+        .leftJoinAndSelect('allTeamPlayers.player', 'allPlayers')
         .where('player.id = :id', { id })
-        .orderBy('match', 'DESC') // Filtra as partidas em que o jogador participa
+        .andWhere('player.userId = :idUser', { idUser: tokenPayloadDto.sub })
+        .orderBy('match.createdAt', 'DESC')
         .getMany();
 
-      // Estrutura os dados para incluir team1, team2 e userWon
       return matches.map((match) => {
-        const team1 = match.teamPlayers
-          .filter((tp) => tp.teamNumber === 1) // Filtra os jogadores do time 1
-          .map((tp) => {
-            return {
-              id: tp.player?.id || uuid(),
-              name: tp.player?.name || 'Jogador Deletado',
-              stars: tp.player?.stars || 0,
-              winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
-              matchs: tp.player?.matchs || 0,
-              isDeleted: !tp.player,
-            };
-          }); // Extrai os jogadores
-
-        const team2 = match.teamPlayers
-          .filter((tp) => tp.teamNumber === 2) // Filtra os jogadores do time 2
-          .map((tp) => {
-            return {
-              id: tp.player?.id || uuid(),
-              name: tp.player?.name || 'Jogador Deletado',
-              stars: tp.player?.stars || 0,
-              winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
-              matchs: tp.player?.matchs || 0,
-              isDeleted: !tp.player,
-            };
-          });
-
-        // Verifica se o usuário ganhou a partida
-        let playerWon = 0;
-        const userTeam = match.teamPlayers.find(
+        // Identifica o time do jogador
+        const playerTeam = match.teamPlayers.find(
           (tp) => tp.player?.id === id,
         )?.teamNumber;
-        if (match.winner === 0) {
-          playerWon = 0;
-        } else if (userTeam === match.winner) {
-          playerWon = 1;
-        } else if (userTeam !== match.winner && match.winner !== 0) {
-          playerWon = 2;
+
+        // Calcula os pontos ganhos/perdidos
+        let pointsDiff = 0;
+        if (match.winner !== 0) {
+          // Encontra o jogador específico na partida
+          const playerInMatch = match.teamPlayers.find(
+            (tp) => tp.player?.id === id,
+          );
+
+          if (playerInMatch) {
+            const currentPoints = playerInMatch.player?.points || 0;
+            // Você precisaria ter armazenado os pontos antes da partida ou calcular a diferença
+            // Como solução alternativa, podemos estimar baseado no resultado:
+            const basePoints = match.winner === playerTeam ? 20 : -10; // Valores exemplos
+            pointsDiff =
+              match.winner === playerTeam
+                ? Math.abs(
+                    basePoints * (1 + (playerInMatch.player?.stars || 0) / 10),
+                  )
+                : -Math.abs(
+                    basePoints * (1 + (playerInMatch.player?.stars || 0) / 10),
+                  );
+          }
+        }
+
+        const team1 = match.teamPlayers
+          .filter((tp) => tp.teamNumber === 1)
+          .map((tp) => ({
+            id: tp.player?.id || uuid(),
+            points: tp.player?.points,
+            name: tp.player?.name || 'Jogador Deletado',
+            stars: tp.player?.stars || 0,
+            winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+            matchs: tp.player?.matchs || 0,
+            isDeleted: !tp.player,
+          }));
+
+        const team2 = match.teamPlayers
+          .filter((tp) => tp.teamNumber === 2)
+          .map((tp) => ({
+            id: tp.player?.id || uuid(),
+            points: tp.player?.points,
+            name: tp.player?.name || 'Jogador Deletado',
+            stars: tp.player?.stars || 0,
+            winRate: tp.player ? Math.ceil(tp.player.winRate) : 0,
+            matchs: tp.player?.matchs || 0,
+            isDeleted: !tp.player,
+          }));
+
+        let playerWon = 0;
+        if (match.winner !== 0) {
+          playerWon = match.winner === playerTeam ? 1 : 2;
         }
 
         return {
@@ -543,9 +610,10 @@ export class MatchsService {
           matchTime: match.matchTime,
           createdAt: match.createdAt,
           updatedAt: match.updatedAt,
-          team1, // Time 1 com os jogadores
-          team2, // Time 2 com os jogadores
-          playerWon, // true se o usuário ganhou, false caso contrário
+          team1,
+          team2,
+          playerWon,
+          pointsChange: Math.ceil(match.pointsChanges?.[id]) || 0,
         };
       });
     } catch (error) {

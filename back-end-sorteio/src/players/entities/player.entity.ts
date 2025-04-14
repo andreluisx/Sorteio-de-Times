@@ -7,8 +7,6 @@ import {
   UpdateDateColumn,
   JoinColumn,
   ManyToOne,
-  AfterLoad,
-  ViewColumn,
   DeleteDateColumn,
 } from 'typeorm';
 
@@ -83,22 +81,19 @@ export class Players {
     }
   }
 
+  @Column({ default: 800 })
+  points: number;
+
   get rank(): string {
-    if (this.winRate > 70) {
-      return 'challenger';
-    } else if (this.winRate > 60) {
-      return 'grão-mestre';
-    } else if (this.winRate > 55) {
-      return 'diamante';
-    } else if (this.winRate > 49) {
-      return 'esmeralda';
-    } else if (this.winRate > 39) {
-      return 'gold';
-    } else if (this.winRate > 20) {
-      return 'prata';
-    } else {
-      return 'ferro';
-    }
+    if (this.points >= 2000) return 'Challenger';
+    if (this.points >= 1800) return 'Grão-Mestre';
+    if (this.points >= 1600) return 'Mestre';
+    if (this.points >= 1400) return 'Diamante';
+    if (this.points >= 1200) return 'Esmeralda';
+    if (this.points >= 1000) return 'Ouro';
+    if (this.points >= 800) return 'Prata';
+    if (this.points >= 600) return 'Bronze';
+    return 'Ferro';
   }
 }
 

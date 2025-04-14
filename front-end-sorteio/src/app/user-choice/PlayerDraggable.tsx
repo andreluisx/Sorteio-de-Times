@@ -27,7 +27,7 @@ export default function TaskCard({ player }: TaskCardProps) {
       className="cursor-grab rounded-lg"
       style={style}
     >
-     <PlayerCard matchs={player.matchs} name={player.name} rank={player.rank} stars={player.stars} key={player.id} winRate={player.winRate}/>
+     <PlayerCard points={player.points} matchs={player.matchs} name={player.name} rank={player.rank} stars={player.stars} key={player.id} winRate={player.winRate}/>
     </div>
   );
 }

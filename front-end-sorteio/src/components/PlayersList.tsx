@@ -1,6 +1,5 @@
 import Player from '@/types/playerType';
 import PlayerCard from './PlayerCard';
-import { motion } from 'framer-motion';
 
 interface PlayerListProps {
   players: Player[];
@@ -53,7 +52,16 @@ export default function PlayersList({
               }}
             >
               {players.map((player) => (
-                <PlayerCard key={player.id} matchs={player.matchs} name={player.name} rank={player.rank} stars={player.stars} winRate={player.winRate} onClick={()=>handlePlayer(player)}/>
+                <PlayerCard 
+                  points={player.points}
+                  key={player.id}
+                  matchs={player.matchs}
+                  name={player.name}
+                  rank={player.rank}
+                  stars={player.stars}
+                  winRate={player.winRate}
+                  onClick={handlePlayer ? () => handlePlayer(player) : undefined}
+                />
               ))}
             </div>
           )}

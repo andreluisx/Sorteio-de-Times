@@ -8,4 +8,6 @@ export default interface Player {
   wins: number;
   loses: number;
   status?: string;
+  points?: number;
+  teamNumber?: number;
 }

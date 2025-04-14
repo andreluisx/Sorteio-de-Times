@@ -31,14 +31,8 @@ export default function Players() {
         <div
           style={{
             overflowY: 'auto',
-            justifyContent: 'center',
-            alignItems: 'center',
-            
-            display: 'flex',
-            flexWrap: 'wrap',
-            flexDirection: 'row',
           }}
-          className='lg:pt-5 pt-1 pb-10 gap-4'
+          className='lg:pt-5 grid grid-cols-1 lg:grid-cols-3 pt-1 pb-10 gap-4'
         >
           {allPlayers.map((player: Player) => (
             <div key={player.id} className="px-3">
@@ -48,6 +42,7 @@ export default function Players() {
                 rank={player.rank}
                 stars={player.stars}
                 winRate={player.winRate}
+                points={player.points}
                 onClick={() => handlePlayer(player.id)} // Função de navegação
                 className='cursor-pointer'
               />

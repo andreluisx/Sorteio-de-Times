@@ -34,6 +34,7 @@ export default function MatchScreen() {
         const avgRank =
           team.reduce((sum: number, player: Player) => sum + player.rank, 0) / team.length;
         const totalStars = team.reduce((sum: number, player: Player) => sum + player.stars, 0);
+        const totalPoints = team.reduce((sum: number, player: Player) => sum + player.points, 0);
         const avgWinRate =
           team.reduce((sum: number, player: Player) => sum + player.winRate, 0) / team.length;
 
@@ -41,6 +42,7 @@ export default function MatchScreen() {
           avgRank: Math.round(avgRank * 10) / 10,
           totalStars,
           avgWinRate: Math.round(avgWinRate),
+          teamPoints: totalPoints,
         };
       };
 
@@ -110,6 +112,7 @@ export default function MatchScreen() {
         </h2>
         <div className="flex justify-between text-xs text-slate-300 mt-2">
           <span>WR média: {stats.avgWinRate}%</span>
+          <span>Pontos: {stats.teamPoints}</span>
           <span>Estrelas: {stats.totalStars}</span>
         </div>
       </div>
@@ -124,6 +127,7 @@ export default function MatchScreen() {
         {team.map((player) => (
           <div key={player.id}>
             <SimpleCardPlayer
+              points={player.points}
               matchs={player.matchs}
               name={player.name}
               stars={player.stars}
@@ -308,7 +312,7 @@ export default function MatchScreen() {
       </h1>
 
       <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
-        <div className="w-full lg:w-fit relative z-20">
+        <div className="w-full lg:w-fit lg:max-w-5/12 relative z-20">
           <TeamSection
             team={match.team1}
             teamNumber={1}
@@ -320,7 +324,7 @@ export default function MatchScreen() {
           <RenderCenterButtons />
         </div>
 
-        <div className="w-full lg:w-fit relative z-20">
+        <div className="w-full lg:w-fit lg:max-w-5/12 relative z-20">
           <TeamSection
             team={match.team2}
             teamNumber={2}

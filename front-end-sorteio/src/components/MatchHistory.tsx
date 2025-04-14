@@ -9,6 +9,7 @@ import MatchTeams from './match/MatchHistory/MatchTeams';
 import MatchLoading from './match/MatchHistory/MatchLoading';
 import MatchEmpty from './match/MatchHistory/MatchEmpty';
 import { formatDate } from './match/MatchHistory/utils';
+import { number } from 'yup';
 
 interface MatchHistoryProps {
   matchs: IMatchType[];
@@ -22,6 +23,17 @@ export default function MatchHistory({ matchs, enhanced = true }: MatchHistoryPr
   const handleMatchClick = (id: number) => {
     router.push(`/matchs/${id}`);
   };
+
+  const renderPoints = (match: IMatchType) => {
+    if(match.pointsChange > 0 && typeof match.pointsChange === 'number'){
+      return `[ +${match.pointsChange} pontos ]`;
+    }
+    if(match.pointsChange < 0 && typeof match.pointsChange === 'number') {
+      return `[ ${match.pointsChange} pontos ]`;
+    } else {
+      return null
+    }
+  }
 
   const getMatchResult = (match: IMatchType) => {
     if (match?.playerWon === 0 || match?.winner === 0) {
@@ -101,7 +113,7 @@ export default function MatchHistory({ matchs, enhanced = true }: MatchHistoryPr
                 <div className={`px-4 py-3 flex justify-between items-center ${result.color}`}>
                   <div className="flex items-center gap-2">
                     {result.icon}
-                    <span className="font-semibold">{result.text}</span>
+                    <span className="font-semibold">{result.text} {renderPoints(match)} </span>
                   </div>
                   <div className="text-sm flex items-center gap-2">
                     <CalendarIcon className="text-slate-400 size-4" />

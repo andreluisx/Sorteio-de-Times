@@ -1,12 +1,18 @@
 'use client';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { MatchType, useMatchsStore } from '@/store/matchs';
+import { ITeamPlayer, useMatchsStore } from '@/store/matchs';
 import PlayerCard from '@/components/PlayerCard';
-import TimeConvert from './TimeConvert';
 import Confetti from 'react-confetti';
-import { Crown, Trophy, Repeat, BarChart2 } from 'lucide-react';
-import Player from '@/types/playerType';
+import {
+  Crown,
+  Trophy,
+  Repeat,
+  BarChart2,
+  Clock1,
+  ArrowUp,
+} from 'lucide-react';
+import TimeConvert from './match/MatchHistory/TimeConvert';
 
 export default function WinnerScreen() {
   const { winnerTeam } = useMatchsStore();
@@ -21,21 +27,21 @@ export default function WinnerScreen() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center p-6">
+    <div className="relative min-h-screen w-full bg-gradient-to-b from-slate-900 to-slate-950 flex items-start justify-center p-6">
       {/* Efeito de confete */}
-      <Confetti 
-        width={window.innerWidth} 
+      <Confetti
+        width={window.innerWidth}
         height={window.innerHeight}
         recycle={false}
         numberOfPieces={500}
         colors={['#f43f5e', '#eab308', '#22d3ee', '#a855f7']}
       />
-      
+
       {/* Overlay brilhante */}
       <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-red-500/5 to-purple-500/5 pointer-events-none" />
 
       {/* Conteúdo principal */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -47,17 +53,32 @@ export default function WinnerScreen() {
             <Trophy className="h-10 w-10 text-yellow-200" strokeWidth={1.5} />
             <h1 className="text-3xl font-bold text-white">Time Vencedor 🎉</h1>
           </div>
-          
+
           <div className="mt-2 flex items-center justify-center gap-4">
+            <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex justify-center items-center">
+              <Clock1 width={17} height={17} className="mr-2 text-yellow-300" />
+              <TimeConvert
+                time={winnerTeam.matchTime}
+                className="text-sm text-white"
+              />
+            </div>
+
             <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex items-center">
               <Crown className="h-4 w-4 mr-2 text-yellow-300" />
               <span className="text-sm font-medium text-white">
                 Time {winnerTeam.winner}
               </span>
             </div>
-            
-            <div className="bg-slate-900/30 px-3 py-1 rounded-full flex items-center">
-              <TimeConvert time={winnerTeam.matchTime} style="text-sm text-white" />
+
+            <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex items-center">
+              <ArrowUp className="h-4 w-4 mr-2 text-yellow-300" />
+              <span className="text-sm font-medium text-white">
+                {
+                  `${Math.ceil(Object.entries(winnerTeam.winnerPoints)
+                    .find(([_, value]) => value > 0)?.[1] || 0)} pontos`
+                }
+                 
+              </span>
             </div>
           </div>
         </div>
@@ -66,20 +87,24 @@ export default function WinnerScreen() {
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {winnerTeam.teamPlayers
-              .filter(tp => tp.teamNumber === winnerTeam.winner)
-              .map((teamPlayer) => (
+              .filter(
+                (teamPlayers: ITeamPlayer) =>
+                  teamPlayers.teamNumber === winnerTeam.winner
+              )
+              .map((teamPlayers: ITeamPlayer) => (
                 <motion.div
-                  key={teamPlayer.player.id}
+                  key={teamPlayers.player.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   <PlayerCard
-                    matchs={teamPlayer.player.matchs}
-                    name={teamPlayer.player.name}
-                    rank={teamPlayer.player.rank}
-                    stars={teamPlayer.player.stars}
-                    winRate={teamPlayer.player.winRate}
+                    points={teamPlayers.player.points}
+                    matchs={teamPlayers.player.matchs}
+                    name={teamPlayers.player.name}
+                    rank={teamPlayers.player.rank}
+                    stars={teamPlayers.player.stars}
+                    winRate={teamPlayers.player.winRate}
                     className="hover:border-yellow-400/50"
                   />
                 </motion.div>
@@ -98,7 +123,7 @@ export default function WinnerScreen() {
             <Repeat className="h-5 w-5" />
             Sortear Novamente
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}

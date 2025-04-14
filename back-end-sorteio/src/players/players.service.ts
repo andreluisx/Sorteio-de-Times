@@ -61,6 +61,7 @@ export class PlayersService {
         winRate: Math.ceil(player.winRate),
         wins: player.wins,
         loses: player.loses,
+        points: player.points,
         matchs: player.matchs,
         idealStar: player.idealStar,
         isActive: player.isActive,
@@ -85,6 +86,7 @@ export class PlayersService {
       winRate: Math.ceil(player.winRate),
       rank: player.rank,
       matchs: player.matchs,
+      points: player.points,
     };
   }
 

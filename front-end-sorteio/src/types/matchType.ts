@@ -12,4 +12,5 @@ export interface IMatchType {
   winner: number;
   createdAt: string;
   matchTime: number;
+  pointsChange: number;
 }

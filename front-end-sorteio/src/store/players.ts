@@ -4,7 +4,7 @@ import { server } from '@/api/server';
 import Player from '@/types/playerType';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { toast } from 'react-toastify';
-import { MatchType } from './matchs';
+import { IMatchType } from '@/types/matchType';
 
 type PlayersState = {
   playersData: Player[];
@@ -18,7 +18,7 @@ type PlayersState = {
   error: string | null;
   stars: number;
   name: string;
-  playerMatchs: MatchType[];
+  playerMatchs: IMatchType[];
 };
 
 type PlayersActions = {
@@ -105,8 +105,8 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
         try {
           const response = await server.post('/players', { name, stars });
           set((state) => ({
-            playersData: [...state.playersData, response.data],
-            allPlayers: [...state.allPlayers, response.data],
+            playersData: [...state.playersData, {...response.data, rank: 'Prata'}],
+            allPlayers: [...state.allPlayers, {...response.data, rank: 'Prata'}],
             isLoading: false,
           }));
         } catch (error) {

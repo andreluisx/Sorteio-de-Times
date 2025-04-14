@@ -1,5 +1,5 @@
 import { Rating } from '@mui/material';
-import { RankRender } from '@/utils/RanksRender';
+import { RankRender } from '@/components/RanksRender';
 import StarIcon from '@mui/icons-material/Star';
 import { motion } from 'framer-motion';
 
@@ -11,6 +11,7 @@ interface PlayerCardProps {
   rank: string;
   onClick?: () => void;
   className?: string;
+  points?: number;
 }
 
 const winRateRender = (winRate: number | undefined, matchs: number) => {
@@ -38,6 +39,7 @@ export default function PlayerCard({
   rank,
   onClick,
   className = '',
+  points,
 }: PlayerCardProps) {
   return (
     <motion.div
@@ -52,14 +54,14 @@ export default function PlayerCard({
       <div className="relative z-10 flex items-center justify-between gap-4">
         {/* Seção esquerda - Informações do jogador */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-xl font-bold truncate text-slate-100 group-hover:text-white transition-colors">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h3 className="text-xl lg:max-w-48 font-bold truncate text-slate-100 group-hover:text-white transition-colors">
               {name}
             </h3>
 
             {/* Badge de rank */}
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-200">
-              {rank}
+            <span className="sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-200">
+              {points ? `${points} pts` : rank}
             </span>
           </div>
 

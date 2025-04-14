@@ -1,7 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
 import StarIcon from '@mui/icons-material/Star';
-import { Progress } from './ui/Progress'; 
 
 interface PlayerStatsProps {
   winRate?: number;

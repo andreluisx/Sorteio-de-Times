@@ -84,8 +84,10 @@ export class MatchsController {
   }
 
   @Get('history-player/:id')
-  PlayerMatchs(@Param('id') id : string) {
-    return this.matchsService.PlayerMatchs(id);
+  PlayerMatchs(
+    @Param('id') id: string,
+    @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+  ) {
+    return this.matchsService.PlayerMatchs(id, tokenPayloadDto);
   }
-
 }
