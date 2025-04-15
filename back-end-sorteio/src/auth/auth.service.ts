@@ -57,7 +57,7 @@ export class AuthService {
     const accessToken = await this.signJwtAsync<Partial<User>>(
       pessoa.id,
       this.jwtConfiguration.jwtTtl,
-      { email: pessoa.email },
+      { email: pessoa.email, isPremium: pessoa.isPremium },
     );
 
     const refreshToken = await this.signJwtAsync<Partial<User>>(
@@ -142,4 +142,32 @@ export class AuthService {
     const {password, ...userData } = user;
     return userData;
   }
+
+  async update(userId: string, updateData: { isPremium?: boolean; password?: string }) {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      
+      if (!user) {
+        throw new NotAcceptableException('Usuário não encontrado');
+      }
+  
+      // Atualiza isPremium se fornecido
+      if (updateData.isPremium !== undefined) {
+        user.isPremium = updateData.isPremium;
+      }
+  
+      // Atualiza a senha se fornecida
+      if (updateData.password) {
+        user.password = await this.hashingService.hash(updateData.password);
+      }
+  
+      await this.userRepository.save(user);
+      
+      return { message: 'Usuário atualizado com sucesso' };
+    } catch (e) {
+      console.error('Erro ao atualizar usuário:', e);
+      throw new ConflictException('Erro ao atualizar usuário');
+    }
+  }
+
 }

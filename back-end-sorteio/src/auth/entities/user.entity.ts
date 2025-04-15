@@ -13,6 +13,12 @@ export class User {
   @Column()
   password: string;
 
+  @Column({default: false})
+  isPremium: boolean;
+
+  @Column({default: false})
+  twoFactor: boolean;
+
   @OneToMany(() => Players, (players) => players.user)
   players: Players[];
 

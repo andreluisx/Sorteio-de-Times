@@ -24,6 +24,6 @@ import { User } from './entities/user.entity';
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
   ],
-  exports: [HashingServiceProtocol, JwtModule, ConfigModule, TypeOrmModule],
+  exports: [HashingServiceProtocol, JwtModule, ConfigModule, TypeOrmModule, AuthService],
 })
 export class AuthModule {}

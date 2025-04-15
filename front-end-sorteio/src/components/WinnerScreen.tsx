@@ -75,6 +75,7 @@ export default function WinnerScreen() {
               <span className="text-sm font-medium text-white">
                 {
                   `${Math.ceil(Object.entries(winnerTeam.winnerPoints)
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     .find(([_, value]) => value > 0)?.[1] || 0)} pontos`
                 }
                  

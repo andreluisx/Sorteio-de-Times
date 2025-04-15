@@ -65,7 +65,6 @@ const PlayerPage = () => {
   };
 
   const handleSave = () => {
-    console.log('BOTAO FOI CLICADO');
     if (player && hasChanges()) {
       updatePlayer(player.id, editedName, editedStars);
       setIsEditing(false);

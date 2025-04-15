@@ -34,57 +34,105 @@ function createPlayerCopy(player: Players): FullPlayers {
   };
 }
 
-// Função principal corrigida
 function balancedRandomTeams(
   players: Players[],
-  type: 'stars' | 'winRate',
+  type: BalancedTypes,
 ): [Players[], Players[]] {
-  // 1. Cria cópias completas dos jogadores
-  const safePlayers = players.map(createPlayerCopy);
+  // 1. Cria cópias dos jogadores para evitar mutações
+  const playersCopy = JSON.parse(JSON.stringify(players)) as Players[];
 
-  // 2. Ordenação com ruído controlado
-  const sortedPlayers = [...safePlayers].sort((a, b) => {
-    const noise = 0.1;
-    const aValue = a[type] * (1 + (Math.random() - 0.5) * noise);
-    const bValue = b[type] * (1 + (Math.random() - 0.5) * noise);
-    return bValue - aValue;
+  // 2. Adiciona ruído controlado baseado no tipo de balanceamento
+  const ratedPlayers = playersCopy.map(player => ({
+    player,
+    rating: getPlayerRating(player, type),
+  }));
+
+  // 3. Ordena com ruído aleatório controlado
+  const sortedPlayers = [...ratedPlayers].sort((a, b) => {
+    // Ruído de 10-15% para manter aleatoriedade
+    const noiseFactor = 0.15;
+    const aNoise = a.rating * (1 + (Math.random() - 0.5) * noiseFactor);
+    const bNoise = b.rating * (1 + (Math.random() - 0.5) * noiseFactor);
+    return bNoise - aNoise;
   });
 
-  // 3. Distribuição balanceada
-  const team1: FullPlayers[] = [];
-  const team2: FullPlayers[] = [];
-  let switchTeams = false;
+  // 4. Distribuição balanceada com aleatoriedade controlada
+  const team1: Players[] = [];
+  const team2: Players[] = [];
+  let teamSwitch = false;
 
-  sortedPlayers.forEach((player, index) => {
+  sortedPlayers.forEach(({ player }, index) => {
+    // 25% de chance de inverter a distribuição a cada 2 jogadores
     if (index % 2 === 0 && Math.random() < 0.25) {
-      switchTeams = !switchTeams;
+      teamSwitch = !teamSwitch;
     }
 
-    const targetTeam = index % 2 === Number(switchTeams) ? team1 : team2;
+    // Distribui alternadamente com possibilidade de inversão
+    const targetTeam = (index % 2 === Number(teamSwitch)) ? team1 : team2;
     targetTeam.push(player);
   });
 
-  // ... (restante da lógica de balanceamento permanece igual)
+  // 5. Verificação e ajuste final do balanceamento
+  return adjustTeamBalance(team1, team2, type);
+}
+
+// Função auxiliar para calcular o rating do jogador
+function getPlayerRating(player: Players, type: BalancedTypes): number {
+  switch (type) {
+    case BalancedTypes.stars:
+      return player.stars * (1 + player.winRate / 200); // Considera parcialmente o winRate
+    case BalancedTypes.winRate:
+      return player.winRate * (1 + player.stars / 10); // Considera parcialmente as estrelas
+    case BalancedTypes.points:
+      return player.points * (1 + (player.winRate - 50) / 100); // Considera performance relativa
+    default:
+      return (player.stars + player.winRate) / 2; // Default misto
+  }
+}
+
+// Ajuste final para garantir equilíbrio
+function adjustTeamBalance(team1: Players[], team2: Players[], type: BalancedTypes): [Players[], Players[]] {
+  const total1 = calculateTeamTotal(team1, type);
+  const total2 = calculateTeamTotal(team2, type);
+  const diff = Math.abs(total1 - total2);
+
+  // Se a diferença for maior que 15%, faz um ajuste
+  if (diff / Math.max(total1, total2) > 0.15) {
+    // Encontra o jogador que melhor equilibra os times
+    const [strongerTeam, weakerTeam] = total1 > total2 ? [team1, team2] : [team2, team1];
+    
+    strongerTeam.sort((a, b) => getPlayerRating(a, type) - getPlayerRating(b, type));
+    weakerTeam.sort((a, b) => getPlayerRating(b, type) - getPlayerRating(a, type));
+
+    // Troca os jogadores mais equilibradores
+    if (strongerTeam.length > 0 && weakerTeam.length > 0) {
+      const swapIndex = Math.floor(Math.random() * Math.min(2, strongerTeam.length, weakerTeam.length));
+      [strongerTeam[swapIndex], weakerTeam[swapIndex]] = [weakerTeam[swapIndex], strongerTeam[swapIndex]];
+    }
+  }
 
   return [team1, team2];
 }
 
-// Função principal de balanceamento
+function calculateTeamTotal(team: Players[], type: BalancedTypes): number {
+  return team.reduce((sum, player) => sum + getPlayerRating(player, type), 0);
+}
+
+// Função principal exportada
 export function BalancedTeams(
   array: Players[],
-  type: string,
+  type: BalancedTypes, // Alterado de string para BalancedTypes
 ): [Players[], Players[]] {
   // Embaralha array antes do balanceamento
-  const shuffledArray = shuffleArray([...array]);
+  const shuffledArray = [...array].sort(() => Math.random() - 0.5);
 
   switch (type) {
     case BalancedTypes.stars:
-      return balancedRandomTeams(shuffledArray, 'stars');
-
     case BalancedTypes.winRate:
-      return balancedRandomTeams(shuffledArray, 'winRate');
-
+    case BalancedTypes.points:
+      return balancedRandomTeams(shuffledArray, type);
     default:
-      return splitArray(shuffledArray);
+      const middle = Math.ceil(shuffledArray.length / 2);
+      return [shuffledArray.slice(0, middle), shuffledArray.slice(middle)];
   }
 }

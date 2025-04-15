@@ -23,7 +23,7 @@ export default function AccountSidebar({ activeTab, setActiveTab, userData }: Ac
       <div className="flex items-center mb-8">
         <div className="relative w-12 h-12 rounded-full border-2 border-red-500 overflow-hidden mr-3">
           <Image 
-            src={userData.avatar} 
+            src={'/tutorial/user.png'} 
             alt="Avatar do usuário"
             width={48}
             height={48}

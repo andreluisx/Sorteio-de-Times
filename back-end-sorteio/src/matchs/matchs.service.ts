@@ -206,7 +206,7 @@ export class MatchsService {
       const expectedWin =
         1 / (1 + Math.pow(10, (avgLoserPoints - avgWinnerPoints) / 400));
 
-      const K = 140;
+      const K = 125;
       const winnerPointsChange = K * (1 - expectedWin);
       const loserPointsChange = winnerPointsChange * -0.7; // 70% dos pontos
 

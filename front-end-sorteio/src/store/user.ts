@@ -7,7 +7,15 @@ import { AxiosError } from 'axios';
 
 type State = {
   token: string | undefined;
-  user: { id: string; email: string } | null;
+  user: {
+    id: string;
+    email: string;
+    isPremium: boolean;
+    avatar: string;
+    emailVerified: boolean;
+    notificationsEnabled: boolean;
+    twoFactorAuth: boolean;
+  } | null;
   refreshToken: string | undefined;
   isLoading: boolean;
   error: boolean;
@@ -36,7 +44,14 @@ export const useUsersStore = create<State & Actions>((set) => ({
   isLoading: false,
   error: false,
   userAuthenticated: false,
-  user: {id: '', email: ''},
+  user: {
+    id: '',
+    email: '',
+    isPremium: false,
+    emailVerified: false,
+    notificationsEnabled: false,
+    twoFactorAuth: false,
+  },
 
   login: async (email: string, password: string, router: AppRouterInstance) => {
     set({ isLoading: true, error: false });
@@ -98,11 +113,11 @@ export const useUsersStore = create<State & Actions>((set) => ({
     set({ isLoading: true });
     try {
       const response = await server.get('/auth/me');
-      set({user: response?.data});
+      set({ user: response?.data });
     } catch (error) {
-      set({user: null});
-    }finally{
-      set({isLoading: false});
+      set({ user: null });
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));

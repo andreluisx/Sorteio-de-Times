@@ -29,7 +29,6 @@ export default function SupportForm() {
     
     // Simulação de envio
     setTimeout(() => {
-      console.log("Dados enviados:", formData);
       setIsSubmitting(false);
       setSubmitSuccess(true);
       setFormData({

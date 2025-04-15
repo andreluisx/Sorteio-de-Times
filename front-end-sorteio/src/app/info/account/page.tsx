@@ -7,43 +7,45 @@ import { UserData } from "@/types/account";
 import ProfileTab from '@/components/account/ProfileTab';
 import SettingsTab from '@/components/account/SettingsTab';
 import AccountSidebar from '@/components/account/AccountSideBar';
-import PremiumTab from '@/components/account/PremiumTab';
 import DeleteAccountTab from '@/components/account/DeleteAccountTab';
 import { useSession } from 'next-auth/react';
-import { redirect, useRouter } from 'next/navigation';
 import { useUsersStore } from '@/store/user';
+import PremiumTab from '@/components/account/Premium/PremiumTab';
 
 export default function AccountPage() {
-  const { data, status } = useSession();
-  const router = useRouter();
+  const {  status } = useSession();
   const { checkUser, user } = useUsersStore();
   const [activeTab, setActiveTab] = useState<string>("meus-dados");
+
   const [userData, setUserData] = useState<UserData>({
-    email: data?.user?.email ?? 'example@email.com',
-    avatar: "/tutorial/user.png",
+    email: '',
     emailVerified: false,
-    premiumMember: false,
+    isPremium: false,
     notificationsEnabled: true,
     twoFactorAuth: false
   });
 
-  useEffect(()=>{
+  useEffect(() => {
     checkUser()
-    if(user === null){
-      redirect('/auth/login')
+    if (user) {
+      setUserData(prev => ({
+        ...prev,
+        email: user.email,
+        isPremium: user.isPremium,
+      }));
     }
-  }, [])
+  }, []);
 
-  
+  console.log(user)
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "meus-dados":
-        return <ProfileTab userData={userData} setUserData={setUserData} />;
+        return <ProfileTab userData={user || userData} setUserData={setUserData} status={status}/>;
       case "configuracoes":
-        return <SettingsTab userData={userData} setUserData={setUserData} />;
+        return <SettingsTab userData={user || userData} setUserData={setUserData} />;
       case "premium":
-        return <PremiumTab userData={userData} />;
+        return <PremiumTab userData={user || userData} />;
       case "deletar-conta":
         return <DeleteAccountTab />;
       default:

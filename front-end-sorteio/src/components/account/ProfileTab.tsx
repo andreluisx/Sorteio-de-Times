@@ -4,9 +4,10 @@ import { User, Mail, AlertTriangle, LogOut } from "lucide-react";
 import Image from "next/image";
 import { AccountTabProps } from "@/types/account";
 import { signOut } from 'next-auth/react';
+import { CircularProgress } from '@mui/material';
 
-export default function ProfileTab({ userData }: AccountTabProps) {
-  
+export default function ProfileTab({ userData, status }: AccountTabProps) {
+  console.log('PROFILE TAB: ', userData)
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -14,6 +15,10 @@ export default function ProfileTab({ userData }: AccountTabProps) {
     setIsLoading(true)
     signOut({callbackUrl: '/auth/login'})
     setIsLoading(false)
+  }
+
+  if(status === 'loading'){
+    return <div className='flex justify-center items-center w-full h-full min-h-screen'><CircularProgress size={40} color='inherit'/></div>
   }
 
   return (
@@ -26,7 +31,7 @@ export default function ProfileTab({ userData }: AccountTabProps) {
       <div className="flex items-center">
         <div className="relative w-20 h-20 rounded-full border-2 border-red-500 overflow-hidden">
           <Image 
-            src={userData.avatar} 
+            src={'/tutorial/user.png'} 
             alt="Avatar do usuário"
             width={100}
             height={100}
@@ -34,7 +39,7 @@ export default function ProfileTab({ userData }: AccountTabProps) {
           />
         </div>
         <div className="ml-6">
-          <p className="text-slate-400">{userData.email}</p>
+          <p className="text-slate-400">{userData?.email}</p>
         </div>
       </div>
 

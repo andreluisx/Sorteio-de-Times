@@ -9,6 +9,8 @@ import { Players } from 'src/players/entities/player.entity';
 import { PlayersModule } from 'src/players/players.module';
 import { MatchsModule } from 'src/matchs/matchs.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { PaymentController } from 'src/payment/payment.controller';
+import { PaymentModule } from 'src/payment/payment.module';
 
 @Module({
   imports: [
@@ -32,8 +34,9 @@ import { AuthModule } from 'src/auth/auth.module';
     PlayersModule,
     MatchsModule,
     AuthModule,
+    PaymentModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, PaymentController],
   providers: [AppService],
 })
 export class AppModule {}

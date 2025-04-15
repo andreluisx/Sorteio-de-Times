@@ -17,7 +17,7 @@ export default function AccountLayout({ children, sidebar, mobileMenu }: Account
         </div>
         
         {/* Conteúdo Principal */}
-        <div className="flex-1 p-6 md:p-8 overflow-auto">
+        <div className="flex-1 justify-center items-center p-6 md:p-8 overflow-auto w-full">
           {/* Menu Mobile */}
           <div className="md:hidden mb-6">
             {mobileMenu}

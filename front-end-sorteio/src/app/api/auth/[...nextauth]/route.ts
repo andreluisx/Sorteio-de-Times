@@ -22,7 +22,7 @@ export const authOptions = {
             password: credentials?.password,
           });
       
-          console.log("Login response:", response.data);
+          
       
           if (response.data) {
             const { accessToken, refreshToken } = response.data;
@@ -31,12 +31,11 @@ export const authOptions = {
       
             const user = {
               id: decoded.sub,
-              name: decoded.name || "", 
               email: decoded.email,
+              isPremium: (decoded as any).isPremium,
               accessToken,
               refreshToken,
             };
-      
             if (Boolean(credentials?.rememberMe) === true || credentials?.rememberMe === "true") {
               setCookie(null, "accessToken", accessToken, {
                 maxAge: 7 * 24 * 60 * 60,
@@ -73,6 +72,7 @@ export const authOptions = {
         if (user) {
           token.accessToken = user.accessToken;
           token.refreshToken = user.refreshToken;
+          token.isPremium = user.isPremium
         }
       } catch (error) {
         console.error("Erro ao gerar token JWT:", error);
@@ -84,6 +84,7 @@ export const authOptions = {
       session.user = session.user || {};
       (session.user as any).accessToken = token.accessToken || null;
       (session.user as any).refreshToken = token.refreshToken || null;
+      (session.user.isPremium as any) = token.isPremium;
       return session;
     },
   },
