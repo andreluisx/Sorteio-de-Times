@@ -54,32 +54,37 @@ export default function WinnerScreen() {
             <h1 className="text-3xl font-bold text-white">Time Vencedor 🎉</h1>
           </div>
 
-          <div className="mt-2 flex items-center justify-center gap-4">
-            <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex justify-center items-center">
-              <Clock1 width={17} height={17} className="mr-2 text-yellow-300" />
-              <TimeConvert
-                time={winnerTeam.matchTime}
-                className="text-sm text-white"
-              />
-            </div>
+          <div className="grid grid-cols-1">
+            <div className="mt-2 flex items-center justify-center gap-4">
+              <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex justify-center items-center">
+                <Clock1
+                  width={17}
+                  height={17}
+                  className="mr-2 text-yellow-300"
+                />
+                <TimeConvert
+                  time={winnerTeam.matchTime}
+                  className="text-sm text-center text-white"
+                />
+              </div>
 
-            <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex items-center">
-              <Crown className="h-4 w-4 mr-2 text-yellow-300" />
-              <span className="text-sm font-medium text-white">
-                Time {winnerTeam.winner}
-              </span>
-            </div>
+              <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex items-center">
+                <Crown className="h-4 w-4 mr-2 text-yellow-300" />
+                <span className="text-sm text-center font-medium text-white">
+                  Time {winnerTeam.winner}
+                </span>
+              </div>
 
-            <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex items-center">
-              <ArrowUp className="h-4 w-4 mr-2 text-yellow-300" />
-              <span className="text-sm font-medium text-white">
-                {
-                  `${Math.ceil(Object.entries(winnerTeam.winnerPoints)
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    .find(([_, value]) => value > 0)?.[1] || 0)} pontos`
-                }
-                 
-              </span>
+              <div className="bg-yellow-700/30 px-3 py-1 rounded-full flex items-center">
+                <ArrowUp className="h-4 w-4 mr-2 text-yellow-300" />
+                <span className="text-sm font-medium text-white text-center">
+                  {`${Math.ceil(
+                    Object.entries(winnerTeam.winnerPoints)
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      .find(([_, value]) => value > 0)?.[1] || 0
+                  )} pontos`}
+                </span>
+              </div>
             </div>
           </div>
         </div>

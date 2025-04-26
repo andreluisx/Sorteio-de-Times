@@ -9,6 +9,7 @@ import { usePlayersStore } from '@/store/players';
 import MatchHistory from './MatchHistory';
 import { ConfirmationModal } from './ui/ConfirmationModal';
 import { PlayerStats } from '@/components/players/PlayerStats';
+import HistoryPlayer from './HistoryPlayer';
 
 const PlayerPage = () => {
   const { id } = useParams();
@@ -18,7 +19,6 @@ const PlayerPage = () => {
     fetchPlayer,
     isLoading,
     clearPlayer,
-    playerMatchs,
     deletePlayer,
     updatePlayer,
   } = usePlayersStore();
@@ -309,8 +309,6 @@ const PlayerPage = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white opacity-10"></div>
                 </div>
 
-               
-
                 <div className="mt-5 flex justify-center items-center">
                   <Rating
                     name="player-stars"
@@ -428,8 +426,8 @@ const PlayerPage = () => {
             </div>
 
             {/* Lista de partidas */}
-            <div className="p-4 h-[calc(100%-60px)] overflow-y-auto custom-scrollbar">
-              <MatchHistory matchs={playerMatchs} />
+            <div className="p-4 h-full overflow-y-auto custom-scrollbar">
+              <HistoryPlayer/>
             </div>
           </div>
         </motion.div>

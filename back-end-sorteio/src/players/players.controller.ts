@@ -44,6 +44,13 @@ export class PlayersController {
     return this.playersService.betterPlayers(tokenPayload);
   }
 
+  @Get('ranking')
+  ranking(
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
+  ) {
+    return this.playersService.ranking(tokenPayload);
+  }
+
   @Get()
   findAll(
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,

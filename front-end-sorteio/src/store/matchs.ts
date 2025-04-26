@@ -4,6 +4,7 @@ import { server } from '@/api/server';
 import { toast } from 'react-toastify';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import Player from '@/types/playerType';
+import { IMatchType } from '@/types/matchType';
 
 export interface MatchType {
   createdAt: string;
@@ -13,6 +14,15 @@ export interface MatchType {
   team2: Player[];
   winner: number;
 }
+
+export interface ResMatch {
+  data: IMatchType[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface ITeamPlayer {
   id: number;
   teamNumber: number;
@@ -32,19 +42,36 @@ interface WinnerType {
 type State = {
   isLoading: boolean;
   pathName: string;
-  match: MatchType;
+  match: IMatchType;
   winnerTeam: WinnerType;
-  allMatchs: MatchType[];
+  allMatchs: ResMatch;
 };
 
 type Actions = {
-  createManualMatch: (team1: Player[], team2: Player[], router: AppRouterInstance) => Promise<void>;
-  createRandomMatch: (players: Player[], router: AppRouterInstance) => Promise<void>;
-  createStarMatch: (players: Player[], router: AppRouterInstance) => Promise<void>;
-  createWinRateMatch: (players: Player[], router: AppRouterInstance) => Promise<void>;
+  createManualMatch: (
+    team1: Player[],
+    team2: Player[],
+    router: AppRouterInstance
+  ) => Promise<void>;
+  createRandomMatch: (
+    players: Player[],
+    router: AppRouterInstance
+  ) => Promise<void>;
+  createStarMatch: (
+    players: Player[],
+    router: AppRouterInstance
+  ) => Promise<void>;
+  createPointMatch: (
+    players: Player[],
+    router: AppRouterInstance
+  ) => Promise<void>;
+  createWinRateMatch: (
+    players: Player[],
+    router: AppRouterInstance
+  ) => Promise<void>;
   deleteMatch: (id: number) => Promise<void>;
   getMatch: (id: number) => Promise<void>;
-  getAllMatchs: () => Promise<void>;
+  getAllMatchs: (nextPage: number, limit: number) => Promise<void>;
   setWinner: (
     id: number,
     winner: number,
@@ -55,12 +82,11 @@ type Actions = {
 // Cria o store
 export const useMatchsStore = create<State & Actions>((set) => ({
   match: {
-    createdAt: '',
-    id: 0,
-    matchTime: 0,
-    team1: [],
-    team2: [], 
-    winner: 0,
+    data: [],
+    total: 0,
+    page: 0,
+    limit: 0,
+    totalPages: 0,
   },
   winnerTeam: {
     createdAt: '',
@@ -78,7 +104,7 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   getMatch: async (id: number) => {
     try {
       set({ isLoading: true });
-      
+
       const response = await server.get(`/match/${id}`);
 
       set({ match: response.data, isLoading: false });
@@ -91,13 +117,12 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   createRandomMatch: async (players: Player[], router: AppRouterInstance) => {
     try {
       set({ isLoading: true });
-      
+
       const playersId = players.map((player) => player.id);
 
-      const response = await server.post(
-        '/match/random',
-        { players: playersId }
-      );
+      const response = await server.post('/match/random', {
+        players: playersId,
+      });
 
       set({ match: response.data });
 
@@ -113,13 +138,31 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   createStarMatch: async (players: Player[], router: AppRouterInstance) => {
     try {
       set({ isLoading: true });
-      
+
       const playersId = players.map((player) => player.id);
 
-      const response = await server.post(
-        '/match/star',
-        { players: playersId }
-      );
+      const response = await server.post('/match/star', { players: playersId });
+
+      set({ match: response.data });
+
+      router.push(`/matchs/${response.data.id}`);
+
+      set({ isLoading: false });
+    } catch (error) {
+      set({ isLoading: false });
+      toast('Erro ao criar partida por estrelas', { type: 'error' });
+    }
+  },
+
+  createPointMatch: async (players: Player[], router: AppRouterInstance) => {
+    try {
+      set({ isLoading: true });
+
+      const playersId = players.map((player) => player.id);
+
+      const response = await server.post('/match/points', {
+        players: playersId,
+      });
 
       set({ match: response.data });
 
@@ -135,13 +178,12 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   createWinRateMatch: async (players: Player[], router: AppRouterInstance) => {
     try {
       set({ isLoading: true });
-      
+
       const playersId = players.map((player) => player.id);
 
-      const response = await server.post(
-        '/match/winrate',
-        { players: playersId }
-      );
+      const response = await server.post('/match/winrate', {
+        players: playersId,
+      });
 
       set({ match: response.data });
 
@@ -157,26 +199,21 @@ export const useMatchsStore = create<State & Actions>((set) => ({
   setWinner: async (id: number, winner: number, router: AppRouterInstance) => {
     set({ isLoading: true });
     try {
-      
-      const response = await server.patch(
-        `/match/${id}`,
-        { winner }
-      );
+      const response = await server.patch(`/match/${id}`, { winner });
 
-      set({ winnerTeam: response.data});
+      set({ winnerTeam: response.data });
 
       router.push('/random-draw/result/winner');
     } catch (error) {
       toast('Erro ao definir vencedor', { type: 'error' });
     } finally {
-      set({isLoading: true})
+      set({ isLoading: true });
     }
   },
 
   deleteMatch: async (id: number) => {
     set({ isLoading: true });
     try {
-      
       await server.delete(`/match/${id}`);
 
       set({ isLoading: false });
@@ -188,35 +225,46 @@ export const useMatchsStore = create<State & Actions>((set) => ({
     }
   },
 
-  getAllMatchs: async () => {
+  getAllMatchs: async (nextPage: number, limit: number) => {
     try {
       set({ isLoading: true });
-      
-      const response = await server.get('/match');
 
-      set({ allMatchs: response.data, isLoading: false });
+      const response = await server.get(`/match?page=${nextPage}&limit=${limit}`);
+
+      set((state) => ({
+        allMatchs: {
+          ...response.data,
+          data: nextPage === 1 
+            ? response.data.data 
+            : [...state.allMatchs.data, ...response.data.data],
+        },
+        isLoading: false,
+      }));
     } catch (error) {
       set({ isLoading: false });
-      toast('Erro ao buscar partidas', { type: 'error' });
+      toast.error('Erro ao buscar partidas');
     }
   },
 
-  createManualMatch: async (team1: Player[], team2: Player[], router)=>{
-    try{
-      set({isLoading: true})
-      
+  createManualMatch: async (team1: Player[], team2: Player[], router) => {
+    try {
+      set({ isLoading: true });
+
       const team1Ids = team1.map((player: Player) => player.id);
       const team2Ids = team2.map((player: Player) => player.id);
 
-      const response = await server.post('/match', { team1: team1Ids, team2: team2Ids })
+      const response = await server.post('/match', {
+        team1: team1Ids,
+        team2: team2Ids,
+      });
 
-      set({match: response.data})
+      set({ match: response.data });
 
       router.push(`/matchs/${response.data.id}`);
-    }catch(e){
-      console.log(e)
-    }finally{
-      set({isLoading: false})
+    } catch (e) {
+      console.log(e);
+    } finally {
+      set({ isLoading: false });
     }
-  }
+  },
 }));

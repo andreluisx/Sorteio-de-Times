@@ -45,7 +45,7 @@ export default function PlayerCard({
     <motion.div
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className={`group relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-4 shadow-lg shadow-slate-950/50 transition-all duration-300 hover:shadow-red-500/20 ${className}`}
+      className={`group relative sm:select-none overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-4 shadow-lg shadow-slate-950/50 transition-all duration-300 hover:shadow-red-500/20 ${className}`}
       onClick={onClick}
     >
       {/* Efeito de brilho no hover */}

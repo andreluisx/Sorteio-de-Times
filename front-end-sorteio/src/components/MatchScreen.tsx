@@ -7,12 +7,19 @@ import SimpleCardPlayer from '@/components/SimpleCardPlayer';
 import { useMatchsStore } from '@/store/matchs';
 import { useParams } from 'next/navigation';
 import { CircularProgress } from '@mui/material';
-import { Trophy, CalendarDays, Clock, ArrowLeft, X, Copy, GamepadIcon } from 'lucide-react';
+import {
+  Trophy,
+  CalendarDays,
+  Clock,
+  ArrowLeft,
+  X,
+  Copy,
+  GamepadIcon,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import TimeConvert from './match/MatchHistory/TimeConvert';
 
 export default function MatchScreen() {
-  
   const { match, setWinner, deleteMatch, getMatch, isLoading } =
     useMatchsStore();
   const router = useRouter();
@@ -32,11 +39,21 @@ export default function MatchScreen() {
     if (match.team1 && match.team2) {
       const calcTeamStats = (team: Player[]) => {
         const avgRank =
-          team.reduce((sum: number, player: Player) => sum + player.rank, 0) / team.length;
-        const totalStars = team.reduce((sum: number, player: Player) => sum + player.stars, 0);
-        const totalPoints = team.reduce((sum: number, player: Player) => sum + player.points, 0);
+          team.reduce((sum: number, player: Player) => sum + player.rank, 0) /
+          team.length;
+        const totalStars = team.reduce(
+          (sum: number, player: Player) => sum + player.stars,
+          0
+        );
+        const totalPoints = team.reduce(
+          (sum: number, player: Player) => sum + player.points,
+          0
+        );
         const avgWinRate =
-          team.reduce((sum: number, player: Player) => sum + player.winRate, 0) / team.length;
+          team.reduce(
+            (sum: number, player: Player) => sum + player.winRate,
+            0
+          ) / team.length;
 
         return {
           avgRank: Math.round(avgRank * 10) / 10,
@@ -64,13 +81,21 @@ export default function MatchScreen() {
 
   const handleCopyClick = async () => {
     try {
-      const names1 = match.team1.map((player) => ` ${player.name}`);
-      const names2 = match.team2.map((player) => ` ${player.name}`);
+      const names1 = match.team1.map((player) => player.name).join(', ');
+      const names2 = match.team2.map((player) => player.name).join(', ');
 
       const textToCopy = `Time 1: ${names1}\nTime 2: ${names2}`;
-      await navigator.clipboard.writeText(textToCopy);
+
+      // Fallback for browsers that don't support Clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = textToCopy;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
       toast('Copiado com sucesso', { type: 'success' });
     } catch (error) {
+      console.error('Erro ao copiar:', error);
       toast('Falha ao copiar', { type: 'error' });
     }
   };
@@ -81,9 +106,11 @@ export default function MatchScreen() {
   };
 
   if (isLoading) {
-    return <div className='flex justify-center items-center w-full'>
-      <CircularProgress size={24} title="Loading" color="inherit" />
-    </div>
+    return (
+      <div className="flex justify-center items-center w-full">
+        <CircularProgress size={24} title="Loading" color="inherit" />
+      </div>
+    );
   }
 
   const TeamSection = ({
@@ -106,7 +133,7 @@ export default function MatchScreen() {
       }`}
       onClick={() => isSelectingWinner && handleSelectWinner(teamNumber)}
     >
-      <div className="bg-slate-900 rounded-t-lg p-3 border-b border-slate-600">
+      <div className="bg-slate-900 w-full rounded-t-lg p-3 border-b border-slate-600">
         <h2 className="text-center text-xl font-bold text-white">
           TIME {teamNumber}
         </h2>
@@ -117,7 +144,7 @@ export default function MatchScreen() {
         </div>
       </div>
       <div
-        className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 overflow-y-auto"
+        className="p-4 grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 overflow-y-auto"
         style={{
           maxHeight: '560px',
           scrollbarWidth: 'thin',
@@ -142,51 +169,56 @@ export default function MatchScreen() {
   const RenderCenterButtons = () => {
     if (match.winner !== 0) {
       return (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="relative bg-gradient-to-br w-full from-slate-800 to-slate-900 rounded-xl p-3 border-2 border-slate-700 shadow-2xl shadow-black/50 overflow-hidden"
-        >
+        <motion.div className="relative bg-gradient-to-br w-full from-slate-800 to-slate-900 rounded-xl p-3 border-2 border-slate-700 shadow-2xl shadow-black/50 overflow-hidden">
           {/* Efeito de brilho */}
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-500/10 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-          
+
           {/* Cabeçalho com resultado */}
-          <div className={`text-center mb-6 ${match.winner === 1 ? 'text-green-400' : 'text-red-400'}`}>
+          <div
+            className={`text-center mb-6 ${
+              match.winner === 1 ? 'text-green-400' : 'text-red-400'
+            }`}
+          >
             <Trophy className="w-12 h-12 mx-auto mb-3" />
             <h3 className="text-2xl font-bold">
               {match.winner === 1 ? 'Time 1 Venceu!' : 'Time 2 Venceu!'}
             </h3>
             <div className="flex justify-center mt-2">
-              <div className={`w-24 h-1 rounded-full ${match.winner === 1 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <div
+                className={`w-24 h-1 rounded-full ${
+                  match.winner === 1 ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              ></div>
             </div>
           </div>
-  
+
           {/* Detalhes da partida */}
           <div className="space-y-4 mb-6">
             <div className="flex items-center justify-center gap-2 text-slate-300">
               <CalendarDays className="w-5 h-5 lg:hidden" />
               <p className="text-lg text-center">
                 {new Date(match.createdAt).toLocaleDateString('pt-BR', {
-                  day: "2-digit", 
-                  month: "2-digit", 
-                  year: "numeric",
-                  weekday: 'long'
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  weekday: 'long',
                 })}
               </p>
             </div>
-  
+
             <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
               <div className="flex items-center justify-center gap-2">
                 <Clock className="w-5 h-5 text-slate-400" />
-                <p className="text-sm text-slate-400 text-center">Duração da partida</p>
+                <p className="text-sm text-slate-400 text-center">
+                  Duração da partida
+                </p>
               </div>
               <div className="mt-2 text-center">
-                <TimeConvert time={match.matchTime}/>
+                <TimeConvert time={match.matchTime} />
               </div>
             </div>
           </div>
-  
+
           {/* Botão Voltar */}
           <motion.button
             whileHover={{ scale: 1.03 }}
@@ -200,27 +232,28 @@ export default function MatchScreen() {
         </motion.div>
       );
     }
-  
+
     if (!isSelectingWinner) {
       return (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
           className="relative bg-gradient-to-br w-full from-slate-800 to-slate-900 rounded-xl p-4 border-2 border-slate-700 shadow-xl shadow-black/40 overflow-hidden"
         >
           {/* Efeito de brilho sutil */}
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-          
+
           {/* Cabeçalho */}
           <div className="text-center mb-5">
             <GamepadIcon className="w-10 h-10 mx-auto mb-2 text-yellow-400" />
-            <h3 className="text-xl font-bold text-slate-200">Partida em Andamento</h3>
+            <h3 className="text-xl font-bold text-slate-200">
+              Partida em Andamento
+            </h3>
             <div className="flex justify-center mt-2">
               <div className="w-20 h-1 rounded-full bg-yellow-500"></div>
             </div>
           </div>
-  
+
           {/* Conjunto de botões com animação */}
           <div className="flex flex-col gap-3 w-full">
             <motion.button
@@ -232,7 +265,7 @@ export default function MatchScreen() {
               <Trophy className="w-5 h-5" />
               Definir Vencedor
             </motion.button>
-            
+
             <motion.button
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
@@ -242,7 +275,7 @@ export default function MatchScreen() {
               <Copy className="w-5 h-5" />
               Copiar Times
             </motion.button>
-            
+
             <motion.button
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
@@ -258,23 +291,22 @@ export default function MatchScreen() {
     } else if (isSelectingWinner) {
       return (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
           className="relative bg-gradient-to-br w-full from-slate-800 to-slate-900 rounded-xl p-5 border-2 border-slate-700 shadow-2xl shadow-black/50 overflow-hidden"
         >
           {/* Efeito de brilho pulsante */}
-          <motion.div 
+          <motion.div
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-500/20 via-transparent to-transparent"
             animate={{ opacity: [0.1, 0.3, 0.1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           ></motion.div>
-          
+
           {/* Cabeçalho estilizado */}
           <div className="text-center mb-6">
             <motion.div
               animate={{ rotate: [0, 5, 0, -5, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
             >
               <Trophy className="w-12 h-12 mx-auto mb-3 text-red-500" />
             </motion.div>
@@ -285,11 +317,11 @@ export default function MatchScreen() {
               <div className="w-24 h-1 rounded-full bg-red-500"></div>
             </div>
             <p className="mb-5 text-slate-300 text-sm">
-              Clique em um dos times para definir o vencedor da partida. Não pode
-              alterar depois.
+              Clique em um dos times para definir o vencedor da partida. Não
+              pode alterar depois.
             </p>
           </div>
-  
+
           {/* Botão de cancelar com efeito */}
           <motion.button
             whileHover={{ scale: 1.03 }}
@@ -314,9 +346,9 @@ export default function MatchScreen() {
       <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
         <div className="w-full lg:w-fit lg:max-w-5/12 relative z-20">
           <TeamSection
-            team={match.team1}
+            team={match?.team1 || []}
             teamNumber={1}
-            stats={teamStats.team1}
+            stats={teamStats?.team1}
           />
         </div>
 
@@ -326,9 +358,9 @@ export default function MatchScreen() {
 
         <div className="w-full lg:w-fit lg:max-w-5/12 relative z-20">
           <TeamSection
-            team={match.team2}
+            team={match?.team1 || []}
             teamNumber={2}
-            stats={teamStats.team2}
+            stats={teamStats?.team2}
           />
         </div>
       </div>

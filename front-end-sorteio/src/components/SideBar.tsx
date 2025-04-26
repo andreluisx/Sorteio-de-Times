@@ -9,13 +9,14 @@ import WinRate from '@/svg/icons/WinRate';
 import MouseClick from '@/svg/icons/MouseClick';
 import Status from '@/svg/icons/Status';
 import Alert from '@/svg/icons/Alert';
+import { Atom } from 'lucide-react';
 
 export default function SideBar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
   const isActiveRoute = (route: string) => {
-    return pathname === route;
+    return pathname.startsWith(route);
   };
 
   const menuItems = [
@@ -26,7 +27,16 @@ export default function SideBar() {
         <Cube/>
       ),
       normalColor: 'text-slate-100',
-      activeColor: 'text-slate-300'
+      activeColor: 'text-red-500'
+    },
+    {
+      href: '/points-balanced',
+      text: 'Balanceado por Pontos',
+      icon: (
+        <Atom/>
+      ),
+      normalColor: 'text-slate-100',
+      activeColor: 'text-red-500'
     },
     {
       href: '/star-balanced',
@@ -35,7 +45,7 @@ export default function SideBar() {
         <Star/>
       ),
       normalColor: 'text-slate-100',
-      activeColor: 'text-slate-300'
+      activeColor: 'text-red-500'
     },
     {
       href: '/winRate-balanced',
@@ -44,7 +54,7 @@ export default function SideBar() {
         <WinRate/>
       ),
       normalColor: 'text-slate-100',
-      activeColor: 'text-slate-300'
+      activeColor: 'text-red-500'
     },
     {
       href: '/user-choice',
@@ -53,7 +63,7 @@ export default function SideBar() {
         <MouseClick/>
       ),
       normalColor: 'text-slate-100',
-      activeColor: 'text-slate-300'
+      activeColor: 'text-red-500'
     },
     {
       type: 'divider'
@@ -65,7 +75,7 @@ export default function SideBar() {
         <Clock/>
       ),
       normalColor: 'text-slate-100',
-      activeColor: 'text-slate-300'
+      activeColor: 'text-red-500'
     },
     {
       href: '/players-estatistics',
@@ -74,7 +84,7 @@ export default function SideBar() {
         <Status/>
       ),
       normalColor: 'text-slate-100',
-      activeColor: 'text-slate-300'
+      activeColor: 'text-red-500'
     },
     {
       type: 'divider'

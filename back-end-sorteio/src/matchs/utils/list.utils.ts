@@ -16,24 +16,6 @@ export function splitArray<T>(array: T[]): [T[], T[]] {
   return [array.slice(0, meio), array.slice(meio)];
 }
 
-// Interface completa para referência
-interface FullPlayers extends Players {
-  winRate: number;
-  matchs: number;
-  rank: string;
-}
-
-// Função para criar cópias seguras mantendo todas as propriedades
-function createPlayerCopy(player: Players): FullPlayers {
-  return {
-    ...player,
-    idealStar: 0,
-    winRate: player.winRate || 0,
-    matchs: player.matchs || 0,
-    rank: player.rank || 'ferro',
-  };
-}
-
 function balancedRandomTeams(
   players: Players[],
   type: BalancedTypes,
@@ -42,7 +24,7 @@ function balancedRandomTeams(
   const playersCopy = JSON.parse(JSON.stringify(players)) as Players[];
 
   // 2. Adiciona ruído controlado baseado no tipo de balanceamento
-  const ratedPlayers = playersCopy.map(player => ({
+  const ratedPlayers = playersCopy.map((player) => ({
     player,
     rating: getPlayerRating(player, type),
   }));
@@ -68,7 +50,7 @@ function balancedRandomTeams(
     }
 
     // Distribui alternadamente com possibilidade de inversão
-    const targetTeam = (index % 2 === Number(teamSwitch)) ? team1 : team2;
+    const targetTeam = index % 2 === Number(teamSwitch) ? team1 : team2;
     targetTeam.push(player);
   });
 
@@ -78,36 +60,52 @@ function balancedRandomTeams(
 
 // Função auxiliar para calcular o rating do jogador
 function getPlayerRating(player: Players, type: BalancedTypes): number {
+  const normPoints = (player.points - 900) / 1100; // Normaliza para 0–1 (aprox.)
+
   switch (type) {
     case BalancedTypes.stars:
-      return player.stars * (1 + player.winRate / 200); // Considera parcialmente o winRate
+      return player.stars * (1 + player.winRate / 200) + normPoints * 5;
     case BalancedTypes.winRate:
-      return player.winRate * (1 + player.stars / 10); // Considera parcialmente as estrelas
+      return player.winRate * (1 + player.stars / 10) + normPoints * 5;
     case BalancedTypes.points:
-      return player.points * (1 + (player.winRate - 50) / 100); // Considera performance relativa
+      return player.points * (1 + (player.winRate - 50) / 100); // Mantém igual
     default:
-      return (player.stars + player.winRate) / 2; // Default misto
+      return (player.stars + player.winRate) / 2 + normPoints * 10;
   }
 }
 
 // Ajuste final para garantir equilíbrio
-function adjustTeamBalance(team1: Players[], team2: Players[], type: BalancedTypes): [Players[], Players[]] {
+function adjustTeamBalance(
+  team1: Players[],
+  team2: Players[],
+  type: BalancedTypes,
+): [Players[], Players[]] {
   const total1 = calculateTeamTotal(team1, type);
   const total2 = calculateTeamTotal(team2, type);
   const diff = Math.abs(total1 - total2);
 
   // Se a diferença for maior que 15%, faz um ajuste
-  if (diff / Math.max(total1, total2) > 0.15) {
+  if (diff / Math.max(total1, total2) > 0.1) {
     // Encontra o jogador que melhor equilibra os times
-    const [strongerTeam, weakerTeam] = total1 > total2 ? [team1, team2] : [team2, team1];
-    
-    strongerTeam.sort((a, b) => getPlayerRating(a, type) - getPlayerRating(b, type));
-    weakerTeam.sort((a, b) => getPlayerRating(b, type) - getPlayerRating(a, type));
+    const [strongerTeam, weakerTeam] =
+      total1 > total2 ? [team1, team2] : [team2, team1];
+
+    strongerTeam.sort(
+      (a, b) => getPlayerRating(a, type) - getPlayerRating(b, type),
+    );
+    weakerTeam.sort(
+      (a, b) => getPlayerRating(b, type) - getPlayerRating(a, type),
+    );
 
     // Troca os jogadores mais equilibradores
     if (strongerTeam.length > 0 && weakerTeam.length > 0) {
-      const swapIndex = Math.floor(Math.random() * Math.min(2, strongerTeam.length, weakerTeam.length));
-      [strongerTeam[swapIndex], weakerTeam[swapIndex]] = [weakerTeam[swapIndex], strongerTeam[swapIndex]];
+      const swapIndex = Math.floor(
+        Math.random() * Math.min(2, strongerTeam.length, weakerTeam.length),
+      );
+      [strongerTeam[swapIndex], weakerTeam[swapIndex]] = [
+        weakerTeam[swapIndex],
+        strongerTeam[swapIndex],
+      ];
     }
   }
 

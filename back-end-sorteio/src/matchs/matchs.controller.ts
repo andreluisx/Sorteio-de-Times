@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { MatchsService } from './matchs.service';
 import { CreateMatchDto } from './dto/create-match.dto';
@@ -31,8 +32,17 @@ export class MatchsController {
   }
 
   @Get()
-  findAll(@TokenPayloadParam() tokenPayloadDto: TokenPayloadDto) {
-    return this.matchsService.findAll(tokenPayloadDto);
+  findAll(
+    @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return this.matchsService.findAll(tokenPayloadDto, Number(page), Number(limit));
+  }
+
+  @Get('best-duos')
+  getTopDuplas(@TokenPayloadParam() tokenPayloadDto: TokenPayloadDto) {
+    return this.matchsService.getTopDuplas(tokenPayloadDto);
   }
 
   @UseGuards(OwnershipGuard)
@@ -83,11 +93,24 @@ export class MatchsController {
     );
   }
 
+  @Post('points')
+  pointsBalancedMatch(
+    @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+    @Body() randomMatchDto: RandomMatchDto,
+  ) {
+    return this.matchsService.pointsBalancedMatch(
+      tokenPayloadDto,
+      randomMatchDto,
+    );
+  }
+
   @Get('history-player/:id')
   PlayerMatchs(
     @Param('id') id: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
   ) {
-    return this.matchsService.PlayerMatchs(id, tokenPayloadDto);
+    return this.matchsService.PlayerMatchs(id, tokenPayloadDto, Number(page), Number(limit));
   }
 }

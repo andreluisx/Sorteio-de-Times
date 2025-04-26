@@ -5,13 +5,18 @@ import { toast } from 'react-toastify';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { AxiosError } from 'axios';
 
+interface UpdateUserDto {
+  name?: string;
+  email?: string;
+  // Adicione outros campos que podem ser atualizados
+}
+
 type State = {
   token: string | undefined;
   user: {
     id: string;
     email: string;
     isPremium: boolean;
-    avatar: string;
     emailVerified: boolean;
     notificationsEnabled: boolean;
     twoFactorAuth: boolean;
@@ -35,23 +40,17 @@ type Actions = {
     password: string,
     router: AppRouterInstance
   ) => Promise<void>;
+  updateUser: (updateData: UpdateUserDto) => Promise<void>;
 };
 
 // Cria o store
-export const useUsersStore = create<State & Actions>((set) => ({
+export const useUsersStore = create<State & Actions>((set, get) => ({
   token: '',
   refreshToken: '',
   isLoading: false,
   error: false,
   userAuthenticated: false,
-  user: {
-    id: '',
-    email: '',
-    isPremium: false,
-    emailVerified: false,
-    notificationsEnabled: false,
-    twoFactorAuth: false,
-  },
+  user: null,
 
   login: async (email: string, password: string, router: AppRouterInstance) => {
     set({ isLoading: true, error: false });
@@ -103,6 +102,7 @@ export const useUsersStore = create<State & Actions>((set) => ({
       token: undefined,
       refreshToken: undefined,
       userAuthenticated: false,
+      user: null
     });
     localStorage.removeItem('userToken');
     localStorage.removeItem('refreshToken');
@@ -120,4 +120,38 @@ export const useUsersStore = create<State & Actions>((set) => ({
       set({ isLoading: false });
     }
   },
+
+  fetchUser: async () => {
+    try {
+      const response = await server.get('/auth/me');
+      set({ user: response?.data });
+    } catch (error) {
+      set({ user: null });
+    }
+  },
+
+  updateUser: async (updateData) => {
+    try {
+      set({ isLoading: true, error: false });
+      
+      // Chamada para a API do NestJS
+      const response = await server.patch('/me', updateData);
+      
+      // Atualiza o usuário no estado
+      set((state)=>({ 
+        user: {...state.user, ...response.data},
+        isLoading: false 
+      }));
+      
+      return response.data;
+    } catch (error) {
+      set({ 
+        isLoading: false, 
+        error: error instanceof AxiosError ? error.response?.data?.message : 'Erro ao atualizar usuário' 
+      });
+      throw error;
+    }
+  },
+
+  
 }));

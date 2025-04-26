@@ -2,6 +2,7 @@
 import ButtonNavigationCard from '@/components/ButtonNavigationCard';
 import playerImage from '@/constants/buttons/player.png';
 import estatisticsImage from '@/constants/buttons/stats.png';
+import imageDuo from '@/constants/icons/duos.jpg';
 import starsImage from '@/constants/buttons/stars.png';
 import { motion } from 'framer-motion';
 
@@ -11,20 +12,20 @@ export default function PlayerEstatistics() {
       title: 'Jogadores',
       image: playerImage,
       path: '/players-estatistics/players',
-      color: 'from-red-600 to-red-800'
+      color: 'from-gray-600 to-gray-900'
     },
     {
       title: 'Melhores Jogadores',
       image: estatisticsImage,
-      path: '/players-estatistics/best-players',
-      color: 'from-blue-600 to-blue-800'
+      path: '/players-estatistics/ranking',
+      color: 'from-gray-600 to-gray-900'
     },
     {
-      title: 'Mais Bem Avaliados',
-      image: starsImage,
-      path: '/players-estatistics/better-balanced',
-      color: 'from-amber-600 to-amber-800'
-    }
+      title: 'Melhores Duplas',
+      image: imageDuo,
+      path: '/players-estatistics/best-duos',
+      color: 'from-gray-600 to-gray-900'
+    },
   ];
 
   return (

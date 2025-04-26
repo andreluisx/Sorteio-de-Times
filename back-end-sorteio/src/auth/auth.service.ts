@@ -18,6 +18,7 @@ import { User } from './entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { v4 as uuid } from 'uuid';
 import { TokenPayloadDto } from './dto/token-payload.dto';
+import { UpdateUserDto } from './dto/updateUserDto';
 
 @Injectable()
 export class AuthService {
@@ -143,7 +144,7 @@ export class AuthService {
     return userData;
   }
 
-  async update(userId: string, updateData: { isPremium?: boolean; password?: string }) {
+  async update(userId: string, updateUserDto: UpdateUserDto) {
     try {
       const user = await this.userRepository.findOneBy({ id: userId });
       
@@ -152,13 +153,13 @@ export class AuthService {
       }
   
       // Atualiza isPremium se fornecido
-      if (updateData.isPremium !== undefined) {
-        user.isPremium = updateData.isPremium;
+      if (updateUserDto.isPremium !== undefined) {
+        user.isPremium = updateUserDto.isPremium;
       }
   
       // Atualiza a senha se fornecida
-      if (updateData.password) {
-        user.password = await this.hashingService.hash(updateData.password);
+      if (updateUserDto.password) {
+        user.password = await this.hashingService.hash(updateUserDto.password);
       }
   
       await this.userRepository.save(user);

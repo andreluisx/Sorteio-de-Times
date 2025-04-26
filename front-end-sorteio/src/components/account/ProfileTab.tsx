@@ -22,7 +22,7 @@ export default function ProfileTab({ userData, status }: AccountTabProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex flex-col w-full">
       <h2 className="text-2xl font-semibold flex items-center">
         <User className="h-5 w-5 mr-2 text-red-500" />
         Meus Dados

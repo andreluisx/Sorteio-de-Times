@@ -56,6 +56,9 @@ export default function RandomChoiceScreen({
     if (type === 'winRate') {
       match.createWinRateMatch(matchPlayers, router);
     }
+    if (type === 'points') {
+      match.createPointMatch(matchPlayers, router);
+    }
   };
 
   const handlePlayer = (player: Player) => {

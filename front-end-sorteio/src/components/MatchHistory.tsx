@@ -1,103 +1,98 @@
 'use client';
-import { useMatchsStore } from '@/store/matchs';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IMatchType } from '@/types/matchType';
-import { TrophyIcon, ClockIcon, CalendarIcon, FireIcon } from '@/components/ui/Icons';
-import MatchFooter from './match/MatchHistory/MatchFooter';
-import MatchTeams from './match/MatchHistory/MatchTeams';
-import MatchLoading from './match/MatchHistory/MatchLoading';
-import MatchEmpty from './match/MatchHistory/MatchEmpty';
+import {
+  TrophyIcon,
+  ClockIcon,
+  CalendarIcon,
+  FireIcon,
+} from '@/components/ui/Icons';
+import MatchFooter from './match/MatchHistory/MatchFooter'; 
+import MatchTeams from './match/MatchHistory/MatchTeams'; 
+import MatchLoading from './match/MatchHistory/MatchLoading'; 
+import MatchEmpty from './match/MatchHistory/MatchEmpty'; 
 import { formatDate } from './match/MatchHistory/utils';
-import { number } from 'yup';
+import { ReactNode } from 'react';
 
 interface MatchHistoryProps {
-  matchs: IMatchType[];
+  matches: IMatchType[];
+  isLoading?: boolean;
   enhanced?: boolean;
+  onMatchClick?: (id: number) => void;
+  renderFooter?: () => ReactNode;
 }
 
-export default function MatchHistory({ matchs, enhanced = true }: MatchHistoryProps) {
-  const { isLoading } = useMatchsStore();
+export default function MatchHistory({
+  matches,
+  enhanced = true,
+  isLoading = false,
+  onMatchClick,
+  renderFooter,
+}: MatchHistoryProps) {
   const router = useRouter();
 
-  const handleMatchClick = (id: number) => {
-    router.push(`/matchs/${id}`);
+  const handleClick = (id: number) => {
+    onMatchClick ? onMatchClick(id) : router.push(`/matchs/${id}`);
   };
 
   const renderPoints = (match: IMatchType) => {
-    if(match.pointsChange > 0 && typeof match.pointsChange === 'number'){
-      return `[ +${match.pointsChange} pontos ]`;
-    }
-    if(match.pointsChange < 0 && typeof match.pointsChange === 'number') {
-      return `[ ${match.pointsChange} pontos ]`;
-    } else {
-      return null
-    }
-  }
+    if (match.pointsChange > 0) return `[ +${match.pointsChange} pontos ]`;
+    if (match.pointsChange < 0) return `[ ${match.pointsChange} pontos ]`;
+    return null;
+  };
 
   const getMatchResult = (match: IMatchType) => {
     if (match?.playerWon === 0 || match?.winner === 0) {
-      return { 
-        text: 'Em Andamento', 
+      return {
+        text: 'Em Andamento',
         color: 'bg-amber-500/20 text-amber-400',
         border: 'border-amber-500/30',
-        icon: <ClockIcon className="text-amber-400" />
+        icon: <ClockIcon className="text-amber-400" />,
       };
     } else if (!match?.playerWon) {
-      return { 
-        text: `Time ${match.winner} Venceu`, 
+      return {
+        text: `Time ${match.winner} Venceu`,
         color: 'bg-blue-500/20 text-blue-400',
         border: 'border-blue-500/30',
-        icon: <TrophyIcon className="text-blue-400" />
+        icon: <TrophyIcon className="text-blue-400" />,
       };
     } else if (match?.playerWon === 1) {
-      return { 
-        text: 'Vitória', 
+      return {
+        text: 'Vitória',
         color: 'bg-green-500/20 text-green-400',
         border: 'border-green-500/30',
-        icon: <FireIcon className="text-green-400" />
+        icon: <FireIcon className="text-green-400" />,
       };
     } else if (match?.playerWon === 2) {
-      return { 
-        text: 'Derrota', 
+      return {
+        text: 'Derrota',
         color: 'bg-red-500/20 text-red-400',
         border: 'border-red-500/30',
-        icon: <FireIcon className="text-red-400" />
+        icon: <FireIcon className="text-red-400" />,
       };
     }
-    return { 
-      text: 'Sem Resultado', 
+    return {
+      text: 'Sem Resultado',
       color: 'bg-gray-500/20 text-gray-400',
       border: 'border-gray-500/30',
-      icon: null
+      icon: null,
     };
   };
 
-  if (isLoading) {
-    return (
-      <MatchLoading/>
-    );
-  }
-
-  if (matchs.length === 0) {
-    return (
-      <MatchEmpty/>
-    );
-  }
+  if (isLoading && matches.length === 0) return <MatchLoading />;
+  if (matches.length === 0) return <MatchEmpty />;
 
   return (
-    <div 
+    <div
       className="w-full overflow-y-auto custom-scrollbar"
-      style={{
-        height: 'calc(300vh - 200px)',
-        maxHeight: '1000px',
-      }}
+      style={{ height: 'calc(170vh - 200px)', maxHeight: '1000px' }}
     >
       <div className="grid grid-cols-1 gap-3 p-2 md:p-4 min-h-min">
         <AnimatePresence>
-          {matchs.map((match: IMatchType) => {
+          {matches.map((match) => {
             const result = getMatchResult(match);
-            
+
             return (
               <motion.div
                 key={match.id}
@@ -106,28 +101,43 @@ export default function MatchHistory({ matchs, enhanced = true }: MatchHistoryPr
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
                 className={`relative group rounded-xl cursor-pointer overflow-hidden shadow-lg ${result.border} border`}
-                onClick={() => handleMatchClick(match.id)}
+                onClick={() => handleClick(match.id)}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-800/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                
-                <div className={`px-4 py-3 flex justify-between items-center ${result.color}`}>
+
+                <div
+                  className={`px-4 py-3 flex justify-between items-center ${result.color}`}
+                >
                   <div className="flex items-center gap-2">
                     {result.icon}
-                    <span className="font-semibold">{result.text} {renderPoints(match)} </span>
+                    <span className="font-semibold">
+                      {result.text} {renderPoints(match)}
+                    </span>
                   </div>
                   <div className="text-sm flex items-center gap-2">
                     <CalendarIcon className="text-slate-400 size-4" />
-                    <span className="text-slate-300">{formatDate(match.createdAt)}</span>
+                    <span className="text-slate-300">
+                      {formatDate(match.createdAt)}
+                    </span>
                   </div>
                 </div>
-                
-                <MatchTeams team1={match.team1} team2={match.team2} enhanced={enhanced} />
-                
-                <MatchFooter matchTime={match.matchTime} matchId={match.id} enhanced={enhanced} />
+
+                <MatchTeams
+                  team1={match.team1}
+                  team2={match.team2}
+                  enhanced={enhanced}
+                />
+                <MatchFooter
+                  matchTime={match.matchTime}
+                  matchId={match.id}
+                  enhanced={enhanced}
+                />
               </motion.div>
             );
           })}
         </AnimatePresence>
+
+        {renderFooter?.()}
       </div>
     </div>
   );

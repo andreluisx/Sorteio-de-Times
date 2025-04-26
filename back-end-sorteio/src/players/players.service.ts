@@ -139,49 +139,40 @@ export class PlayersService {
     const allPlayers = await this.playersRepository.find({
       where: { userId: token.sub },
     });
-    const betterBalanced = allPlayers
-      .filter((player) => {
-        const difference = Math.abs(player.idealStar - player.stars);
-        return difference <= 1;
-      })
+  
+    const betterPlayers = allPlayers
       .map((player) => {
+        const difference = Math.abs(player.idealStar - player.stars);
         return {
           ...player,
+          difference,
           matchs: player.matchs,
-          winRate: Math.ceil(player.winRate),
+          wins: player.wins,
+          loses: player.loses,
+          rank: player.rank,
+          points: player.points,
+          winRate: Math.ceil(player.winRate), // opcional arredondar aqui
           idealStar: player.idealStar,
         };
-      });
-    const balanced = allPlayers
-      .filter((player) => {
-        const difference = Math.abs(player.idealStar - player.stars);
-        return difference <= 3 && difference > 1;
       })
-      .map((player) => {
-        return {
-          ...player,
-          matchs: player.matchs,
-          winRate: Math.ceil(player.winRate),
-          idealStar: player.idealStar,
-        };
-      });
-
-    const worstBalanced = allPlayers
-      .filter((player) => {
-        const difference = Math.abs(player.idealStar - player.stars);
-        return difference > 3;
+      .sort((a, b) => {
+        // Ordena por:
+        // 1. Menor diferença entre stars e idealStar
+        // 2. Mais partidas jogadas
+        // 3. Maior winRate
+        if (a.difference !== b.difference) {
+          return a.difference - b.difference;
+        } else if (a.matchs !== b.matchs) {
+          return b.matchs - a.matchs;
+        } else {
+          return b.winRate - a.winRate;
+        }
       })
-      .map((player) => {
-        return {
-          ...player,
-          matchs: player.matchs,
-          winRate: Math.ceil(player.winRate),
-          idealStar: player.idealStar,
-        };
-      });
-
-    return { betterBalanced, balanced, worstBalanced };
+      .slice(0, 10); // Retorna apenas os 10 melhores
+  
+      return { betterPlayers };
   }
+  
 
   async betterPlayers(token: TokenPayloadDto) {
     const allPlayers = await this.playersRepository.find({
@@ -198,7 +189,7 @@ export class PlayersService {
         const scoreB = b.winRate * Math.sqrt(b.matchs);
         return scoreB - scoreA; // Ordenação decrescente
       })
-      .slice(0, 5)
+      .slice(0, 10)
       .map((player) => {
         return {
           id: player.id,
@@ -206,8 +197,34 @@ export class PlayersService {
           stars: player.stars,
           wins: player.wins,
           loses: player.loses,
+          rank: player.rank,
           winRate: Math.ceil(player.winRate),
           matchs: player.matchs,
+        };
+      });
+  
+    return { betterPlayers };
+  }
+
+  async ranking(token: TokenPayloadDto) {
+    const allPlayers = await this.playersRepository.find({
+      where: { userId: token.sub, deleted_at: null },
+      order: { points: 'DESC'}
+    });
+  
+    const betterPlayers = allPlayers
+      .slice(0, 10)
+      .map((player) => {
+        return {
+          id: player.id,
+          name: player.name,
+          stars: player.stars,
+          wins: player.wins,
+          loses: player.loses,
+          rank: player.rank,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+          points: player.points,
         };
       });
   

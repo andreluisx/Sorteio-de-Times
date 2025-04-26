@@ -6,25 +6,68 @@ import MouseClick from '@/svg/icons/MouseClick';
 import Status from '@/svg/icons/Status';
 import Clock from '@/svg/icons/Clock';
 import Account from '@/svg/icons/Account';
+import { Atom } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 const mobileLinks = [
-  { href: '/info/account', text: 'Minha Conta', icon: <Account/>},
-  { href: '/random-draw', text: 'Sorteio Aleatório', icon: <Cube /> },
-  { href: '/star-balanced', text: 'Balanceado por Estrelas', icon: <Star /> },
+  {
+    href: '/info/account',
+    text: 'Minha Conta',
+    icon: <Account />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
+  },
+  {
+    href: '/random-draw',
+    text: 'Sorteio Aleatório',
+    icon: <Cube />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
+  },
+  {
+    href: '/points-balanced',
+    text: 'Balanceado po Pontos',
+    icon: <Atom />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
+  },
+  {
+    href: '/star-balanced',
+    text: 'Balanceado por Estrelas',
+    icon: <Star />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
+  },
   {
     href: '/winRate-balanced',
     text: 'Balanceado por WinRate',
     icon: <WinRate />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
   },
-  { href: '/user-choice', text: 'Você Escolhe os Times', icon: <MouseClick /> },
+  {
+    href: '/user-choice',
+    text: 'Você Escolhe os Times',
+    icon: <MouseClick />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
+  },
 ];
 
 const mobileExtra = [
-  { href: '/matchs', text: 'Histórico de Partidas', icon: <Clock /> },
+  {
+    href: '/matchs',
+    text: 'Histórico de Partidas',
+    icon: <Clock />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
+  },
   {
     href: '/players-estatistics',
     text: 'Estátisticas dos Jogadores',
     icon: <Status />,
+    normalColor: 'text-slate-100',
+    activeColor: 'text-red-500',
   },
 ];
 
@@ -33,6 +76,12 @@ type Props = {
 };
 
 export default function MobileMenu({ status }: Props) {
+  const pathname = usePathname();
+
+  const isActiveRoute = (route: string) => {
+    return pathname.startsWith(route);
+  };
+
   if (status === 'authenticated') {
     return (
       <div className="md:hidden bg-slate-800/80 backdrop-blur-sm border-b border-slate-700">
@@ -40,7 +89,13 @@ export default function MobileMenu({ status }: Props) {
           {mobileLinks.map((link) => (
             <Link key={link.href} href={link.href}>
               <div className="cursor-pointer">
-                <div className="items-center flex text-slate-100 p-3 mb-1 gap-3 hover:text-slate-300">
+                <div
+                  className={`items-center flex p-3 mb-1 gap-3 ${
+                    isActiveRoute(link.href ?? '')
+                      ? link.activeColor
+                      : `${link.normalColor} hover:${link.activeColor}`
+                  }`}
+                >
                   {link.icon}
                   <p className="whitespace-nowrap">{link.text}</p>
                 </div>
@@ -53,7 +108,13 @@ export default function MobileMenu({ status }: Props) {
           {mobileExtra.map((link) => (
             <Link key={link.href} href={link.href}>
               <div className="cursor-pointer">
-                <div className="items-center flex text-slate-100 p-3 mb-1 gap-3 hover:text-slate-300">
+                <div
+                  className={`items-center flex p-3 mb-1 gap-3 ${
+                    isActiveRoute(link.href ?? '')
+                      ? link.activeColor
+                      : `${link.normalColor} hover:${link.activeColor}`
+                  }`}
+                >
                   {link.icon}
                   <p className="whitespace-nowrap">{link.text}</p>
                 </div>

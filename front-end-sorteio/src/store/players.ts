@@ -5,6 +5,7 @@ import Player from '@/types/playerType';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { toast } from 'react-toastify';
 import { IMatchType } from '@/types/matchType';
+import { ResMatch } from './matchs';
 
 type PlayersState = {
   playersData: Player[];
@@ -18,12 +19,18 @@ type PlayersState = {
   error: string | null;
   stars: number;
   name: string;
-  playerMatchs: IMatchType[];
+  playerMatchs: ResMatch;
+  matchLoading: boolean;
 };
 
 type PlayersActions = {
-  fetchPlayers: () => Promise<void>;
+  fetchPlayers: (name: string) => Promise<void>;
   fetchPlayer: (id: string) => Promise<void>;
+  fetchHistoryPlayer: (
+    id: string,
+    page: number,
+    limit: number
+  ) => Promise<void>;
   createPlayer: (name: string, stars: number) => Promise<void>;
   deletePlayer: (id: string, router: AppRouterInstance) => Promise<void>;
   clearPlayer: () => void;
@@ -41,8 +48,8 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
     return {
       playersData: [],
       matchPlayers: [],
-      playersTeam1:[],
-      playersTeam2:[],
+      playersTeam1: [],
+      playersTeam2: [],
       player: {
         id: '',
         loses: 0,
@@ -53,6 +60,7 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
         winRate: 0,
         wins: 0,
       },
+      matchLoading: false,
       isLoading: false,
       error: null,
       stars: 0,
@@ -60,23 +68,36 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
       allPlayers: [],
       playerMatchs: [],
 
-      fetchPlayers: async () => {
+      fetchPlayers: async (name: string = '') => {
         set({ isLoading: true, error: null });
+        if (name === '') {
+          try {
+            const response = await server.get(`/players?=${name}`);
 
-        try {
-          const response = await server.get('/players');
-
-          set((state) => ({
-            playersData: response.data.filter(
-              (player: Player) =>
-                !state.matchPlayers.some((mp) => mp.id === player.id)
-            ),
-            isLoading: false,
-            allPlayers: response.data,
-          }));
-        } catch (error) {
-          console.error('Erro ao carregar os players:', error);
-          set({ error: 'Erro ao carregar os players', isLoading: false });
+            set((state) => ({
+              playersData: response.data.filter(
+                (player: Player) =>
+                  !state.matchPlayers.some((mp) => mp.id === player.id)
+              ),
+              isLoading: false,
+              allPlayers: response.data,
+            }));
+          } catch (error) {
+            console.error('Erro ao carregar os players:', error);
+            set({ error: 'Erro ao carregar os players', isLoading: false });
+          }
+        }
+        if (name !== '') {
+          try {
+            const response = await server.get(`/players?name=${name}`);
+            set({
+              playersData: response.data,
+              isLoading: false,
+              allPlayers: response.data,
+            });
+          } catch (e) {
+            toast(`Ocorreu um problema: ${e.message}`, { type: 'error' });
+          }
         }
       },
 
@@ -86,17 +107,40 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
         try {
           const response = await server.get(`/players/${id}`);
 
-          const response_matchs = await server.get(
-            `/match/history-player/${id}`
-          );
-
           set({
             player: response.data,
-            playerMatchs: response_matchs.data,
             isLoading: false,
           });
         } catch (error) {
           set({ error: 'Erro ao carregar o player', isLoading: false });
+        }
+      },
+
+      fetchHistoryPlayer: async (
+        id: string,
+        page: number = 1,
+        limit: number = 10
+      ) => {
+        set({ matchLoading: true, error: null });
+
+        try {
+          const response = await server.get(
+            `/match/history-player/${id}?page=${page}&limit=${limit}`
+          );
+
+          set((state) => ({
+            playerMatchs: {
+              ...response.data,
+              data:
+                page === 1
+                  ? response.data.data
+                  : [...state.playerMatchs.data, ...response.data.data],
+            },
+          }));
+        } catch (error) {
+          set({ error: 'Erro ao carregar o player' });
+        } finally {
+          set({ matchLoading: false });
         }
       },
 
@@ -105,8 +149,14 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
         try {
           const response = await server.post('/players', { name, stars });
           set((state) => ({
-            playersData: [...state.playersData, {...response.data, rank: 'Prata'}],
-            allPlayers: [...state.allPlayers, {...response.data, rank: 'Prata'}],
+            playersData: [
+              ...state.playersData,
+              { ...response.data, rank: 'Prata' },
+            ],
+            allPlayers: [
+              ...state.allPlayers,
+              { ...response.data, rank: 'Prata' },
+            ],
             isLoading: false,
           }));
         } catch (error) {
@@ -237,19 +287,18 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
 
       setPlayerStatus: (playerId: string, status: string) => {
         const { allPlayers } = get();
-        const updatedPlayer = allPlayers.find(p => p.id === playerId);
+        const updatedPlayer = allPlayers.find((p) => p.id === playerId);
         if (!updatedPlayer) return;
-    
+
         // Remove dos dois times
-        const team1 = get().playersTeam1.filter(p => p.id !== playerId);
-        const team2 = get().playersTeam2.filter(p => p.id !== playerId);
-    
+        const team1 = get().playersTeam1.filter((p) => p.id !== playerId);
+        const team2 = get().playersTeam2.filter((p) => p.id !== playerId);
+
         if (status === 'time_1') team1.push(updatedPlayer);
         else if (status === 'time_2') team2.push(updatedPlayer);
-    
+
         set({ playersTeam1: team1, playersTeam2: team2 });
       },
-      
     };
   }
 );

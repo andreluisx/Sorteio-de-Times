@@ -30,7 +30,7 @@ export default function Navbar() {
         <div className="md:hidden flex items-center space-x-4">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded text-white cursor-pointer"
+            className="p-2 rounded text-white cursor-pointer text-2xl"
           >
             {isMenuOpen ? '✕' : '☰'}
           </button>

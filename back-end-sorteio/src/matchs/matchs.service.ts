@@ -15,6 +15,7 @@ import { RandomMatchDto } from './dto/create-random-match.dto';
 import { ListService } from './list.service';
 import { BalancedTypes } from './utils/balanced-types.enum';
 import { v4 as uuid } from 'uuid';
+import { log } from 'mathjs'; // ou usa Math.log, depende do seu ambiente
 
 @Injectable()
 export class MatchsService {
@@ -74,8 +75,8 @@ export class MatchsService {
     return this.findOne(match.id);
   }
 
-  async findAll(tokenPayloadDto: TokenPayloadDto) {
-    const matches = await this.matchsRepository.find({
+  async findAll(tokenPayloadDto: TokenPayloadDto, page = 1, limit = 10) {
+    const [matches, total] = await this.matchsRepository.findAndCount({
       relations: ['teamPlayers', 'teamPlayers.player'],
       order: { createdAt: 'desc' },
       where: { userId: tokenPayloadDto.sub },
@@ -85,9 +86,11 @@ export class MatchsService {
         winner: true,
         matchTime: true,
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
-
-    return matches.map((match) => {
+  
+    const data = matches.map((match) => {
       const team1 = match.teamPlayers
         .filter((tp) => tp.teamNumber === 1)
         .map((tp) => ({
@@ -98,7 +101,7 @@ export class MatchsService {
           matchs: tp.player?.matchs || 0,
           isDeleted: !tp.player,
         }));
-
+  
       const team2 = match.teamPlayers
         .filter((tp) => tp.teamNumber === 2)
         .map((tp) => ({
@@ -109,7 +112,7 @@ export class MatchsService {
           matchs: tp.player?.matchs || 0,
           isDeleted: !tp.player,
         }));
-
+  
       return {
         id: match.id,
         createdAt: match.createdAt,
@@ -120,6 +123,95 @@ export class MatchsService {
         team2,
       };
     });
+  
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+  
+
+  async getDuplasFromNomes(nomes: string[]): Promise<string[][]> {
+    const duplas: string[][] = [];
+    for (let i = 0; i < nomes.length; i++) {
+      for (let j = i + 1; j < nomes.length; j++) {
+        const dupla = [nomes[i], nomes[j]].sort(); // ordena pra normalizar
+        duplas.push(dupla);
+      }
+    }
+    return duplas;
+  }
+
+  async getTopDuplas(tokenPayloadDto: TokenPayloadDto) {
+    const matches = await this.matchsRepository.find({
+      where: { userId: tokenPayloadDto.sub },
+      order: { createdAt: 'desc' },
+      take: 40, // ✅ Limita as últimas 40
+      relations: ['teamPlayers', 'teamPlayers.player'],
+      select: {
+        id: true,
+        createdAt: true,
+        winner: true,
+        matchTime: true,
+        userId: true,
+      },
+    });
+
+    const duplaStatsMap = new Map<
+      string,
+      { nomes: string[]; vitorias: number; partidas: number }
+    >();
+
+    for (const match of matches) {
+      const winnerTeam = match.teamPlayers
+        .filter((tp) => tp.teamNumber === match.winner)
+        .map((tp) => tp.player?.name)
+        .filter(Boolean);
+
+      const allTeams = [1, 2].map((teamNumber) =>
+        match.teamPlayers
+          .filter((tp) => tp.teamNumber === teamNumber)
+          .map((tp) => tp.player?.name)
+          .filter(Boolean),
+      );
+
+      for (const team of allTeams) {
+        const duplas = await this.getDuplasFromNomes(team);
+        for (const dupla of duplas) {
+          const key = dupla.join('::');
+          if (!duplaStatsMap.has(key)) {
+            duplaStatsMap.set(key, { nomes: dupla, partidas: 0, vitorias: 0 });
+          }
+          duplaStatsMap.get(key)!.partidas += 1;
+        }
+      }
+
+      const duplasVencedoras = await this.getDuplasFromNomes(winnerTeam);
+      for (const dupla of duplasVencedoras) {
+        const key = dupla.join('::');
+        if (duplaStatsMap.has(key)) {
+          duplaStatsMap.get(key)!.vitorias += 1;
+        }
+      }
+    }
+
+    const duplasOrdenadas = Array.from(duplaStatsMap.values())
+      .filter((d) => d.vitorias > 0) // ✅ só quem venceu pelo menos uma
+      .map((d) => ({
+        ...d,
+        winRate: d.vitorias / d.partidas,
+        score: (d.vitorias / d.partidas) * Math.log(d.partidas + 1), // ponderado
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 15);
+
+    return {
+      totalPartidas: matches.length,
+      duplas: duplasOrdenadas,
+    };
   }
 
   async findOne(id: number) {
@@ -207,8 +299,8 @@ export class MatchsService {
         1 / (1 + Math.pow(10, (avgLoserPoints - avgWinnerPoints) / 400));
 
       const K = 125;
-      const winnerPointsChange = K * (1 - expectedWin);
-      const loserPointsChange = winnerPointsChange * -0.7; // 70% dos pontos
+      const winnerPointsChange = Math.round(K * (1 - expectedWin));
+      const loserPointsChange = Math.round(winnerPointsChange * -0.7); // 70% dos pontos
 
       match.pointsChanges = {};
 
@@ -449,6 +541,89 @@ export class MatchsService {
     }
   }
 
+  async pointsBalancedMatch(
+    tokenPayloadDto: TokenPayloadDto,
+    randomMatchDto: RandomMatchDto,
+  ) {
+    try {
+      const match = this.matchsRepository.create();
+      match['userId'] = tokenPayloadDto?.sub ?? match['userId'];
+      await this.matchsRepository.save(match);
+
+      // Buscar jogadores para o time 1
+      const players = await this.playersRepository.findBy({
+        id: In(randomMatchDto.players),
+      });
+
+      const listPlayersLength = players.length;
+
+      if (listPlayersLength % 2 !== 0) {
+        throw new BadRequestException(
+          'A quantidade de jogadores tem que ser um número par',
+        );
+      }
+
+      const [team1, team2] = this.listService.BalancedTeam(
+        players,
+        BalancedTypes.points,
+      );
+      // Criar associações para time 1
+      const team1Associations = team1.map((player) => {
+        const teamPlayer = new TeamPlayer();
+        teamPlayer.match = match;
+        teamPlayer.player = player;
+        teamPlayer.teamNumber = 1;
+        return teamPlayer;
+      });
+
+      // Criar associações para time 2
+      const team2Associations = team2.map((player) => {
+        const teamPlayer = new TeamPlayer();
+        teamPlayer.match = match;
+        teamPlayer.player = player;
+        teamPlayer.teamNumber = 2;
+        return teamPlayer;
+      });
+
+      // Salvar todas as associações
+      await this.teamPlayerRepository.save([
+        ...team1Associations,
+        ...team2Associations,
+      ]);
+
+      const team1R = team1.map((player) => {
+        return {
+          name: player.name,
+          points: player.points,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
+      });
+
+      const team2R = team2.map((player) => {
+        return {
+          name: player.name,
+          points: player.points,
+          stars: player.stars,
+          winRate: Math.ceil(player.winRate),
+          matchs: player.matchs,
+        };
+      });
+
+      return {
+        id: match.id,
+        matchTime: match.matchTime,
+        winner: match.winner,
+        createdAt: match.createdAt,
+        team1: team1R,
+        team2: team2R,
+      };
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
   async winRateBalancedMatch(
     tokenPayloadDto: TokenPayloadDto,
     randomMatchDto: RandomMatchDto,
@@ -532,9 +707,17 @@ export class MatchsService {
     }
   }
 
-  async PlayerMatchs(id: string, tokenPayloadDto: TokenPayloadDto) {
+  async PlayerMatchs(
+    id: string,
+    tokenPayloadDto: TokenPayloadDto,
+    page: number = 1,
+    limit: number = 10
+  ) {
     try {
-      const matches = await this.matchsRepository
+      const skip = (page - 1) * limit;
+  
+      // Consulta paginada
+      const [matches, total] = await this.matchsRepository
         .createQueryBuilder('match')
         .innerJoinAndSelect('match.teamPlayers', 'teamPlayer')
         .innerJoinAndSelect('teamPlayer.player', 'player')
@@ -543,27 +726,23 @@ export class MatchsService {
         .where('player.id = :id', { id })
         .andWhere('player.userId = :idUser', { idUser: tokenPayloadDto.sub })
         .orderBy('match.createdAt', 'DESC')
-        .getMany();
-
-      return matches.map((match) => {
-        // Identifica o time do jogador
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+  
+      const data = matches.map((match) => {
         const playerTeam = match.teamPlayers.find(
           (tp) => tp.player?.id === id,
         )?.teamNumber;
-
-        // Calcula os pontos ganhos/perdidos
+  
         let pointsDiff = 0;
         if (match.winner !== 0) {
-          // Encontra o jogador específico na partida
           const playerInMatch = match.teamPlayers.find(
             (tp) => tp.player?.id === id,
           );
-
+  
           if (playerInMatch) {
-            const currentPoints = playerInMatch.player?.points || 0;
-            // Você precisaria ter armazenado os pontos antes da partida ou calcular a diferença
-            // Como solução alternativa, podemos estimar baseado no resultado:
-            const basePoints = match.winner === playerTeam ? 20 : -10; // Valores exemplos
+            const basePoints = match.winner === playerTeam ? 20 : -10;
             pointsDiff =
               match.winner === playerTeam
                 ? Math.abs(
@@ -574,7 +753,7 @@ export class MatchsService {
                   );
           }
         }
-
+  
         const team1 = match.teamPlayers
           .filter((tp) => tp.teamNumber === 1)
           .map((tp) => ({
@@ -586,7 +765,7 @@ export class MatchsService {
             matchs: tp.player?.matchs || 0,
             isDeleted: !tp.player,
           }));
-
+  
         const team2 = match.teamPlayers
           .filter((tp) => tp.teamNumber === 2)
           .map((tp) => ({
@@ -598,12 +777,12 @@ export class MatchsService {
             matchs: tp.player?.matchs || 0,
             isDeleted: !tp.player,
           }));
-
+  
         let playerWon = 0;
         if (match.winner !== 0) {
           playerWon = match.winner === playerTeam ? 1 : 2;
         }
-
+  
         return {
           id: match.id,
           winner: match.winner,
@@ -613,9 +792,17 @@ export class MatchsService {
           team1,
           team2,
           playerWon,
-          pointsChange: Math.ceil(match.pointsChanges?.[id]) || 0,
+          pointsChange: Math.ceil(pointsDiff),
         };
       });
+  
+      return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       throw new Error(error);
     }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -6,6 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 import { TokenPayloadParam } from 'src/params/token-payload.param';
 import { TokenPayloadDto } from './dto/token-payload.dto';
 import { AuthTokenGuard } from './guards/auth-token.guard';
+import { UpdateUserDto } from './dto/updateUserDto';
 
 @Controller('auth')
 export class AuthController {
@@ -32,4 +33,14 @@ export class AuthController {
   ) {
     return this.authService.checkAuth(tokenPayload);
   }
+
+  @UseGuards(AuthTokenGuard)
+  @Patch('me')
+  updateUser(
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
+    @Body() updateUserDto: UpdateUserDto, 
+  ){
+    return this.authService.update(tokenPayload.sub, updateUserDto)
+  }
+
 }

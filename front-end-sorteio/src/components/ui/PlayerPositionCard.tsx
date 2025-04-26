@@ -99,8 +99,8 @@ export default function PlayerCard({ player, position, tier }: PlayerCardProps) 
               <span>{player.wins}W - {player.loses}L</span>
               <span>•</span>
               <span>{player.matchs} partidas</span>
-              <span>•</span>
-              <span className={style.text}>{style.label}</span>
+              <span className='hidden lg:block'>•</span>
+              <span className={`hidden lg:block ${style.text}`}>{style.label}</span>
             </div>
           </div>
         </div>

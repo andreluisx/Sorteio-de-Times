@@ -41,10 +41,11 @@ export default function SimpleCardPlayer({
 
   return (
     <motion.div
+      
+      transition={{ duration: 0.1 }}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="cursor-pointer"
     >
       <div className="w-full flex flex-col bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-slate-700 p-3 shadow-lg shadow-black/20 hover:border-red-500/30 transition-all duration-200">
         {/* Top Row - Name and Points */}

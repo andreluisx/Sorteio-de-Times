@@ -3,7 +3,7 @@ import { getSession, signOut } from 'next-auth/react';
 import Cookies from 'js-cookie';
 
 export const server = axios.create({
-  baseURL: 'http://192.168.1.108:4000',
+  baseURL: 'http://192.168.1.109:4000',
   validateStatus: function (status) {
     return status >= 200 && status < 300;
   },

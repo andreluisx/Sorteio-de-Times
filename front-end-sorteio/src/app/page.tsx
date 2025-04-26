@@ -32,9 +32,9 @@ export default function LandingPage() {
                 Crie times equilibrados, acompanhe estatísticas e mantenha um histórico completo das suas partidas
               </p>
               <div className="flex space-x-4">
-                <button className="cursor-pointer px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
+                <Link href={'/auth/register'} className="cursor-pointer px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
                   Começar Agora
-                </button>
+                </Link>
                 <button onClick={() => window.location.replace("/#como-funciona")} className="cursor-pointer px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors">
                   Saiba Mais
                 </button>
