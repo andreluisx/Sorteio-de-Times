@@ -144,9 +144,9 @@ export class AuthService {
     return userData;
   }
 
-  async update(userId: string, updateUserDto: UpdateUserDto) {
+  async update(updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.userRepository.findOneBy({ id: userId });
+      const user = await this.userRepository.findOneBy({ email: updateUserDto.email });
       
       if (!user) {
         throw new NotAcceptableException('Usuário não encontrado');

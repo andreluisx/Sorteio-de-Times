@@ -25,7 +25,7 @@ export const plans = [
       process.env.NODE_ENV === 'development'
         ? 'https://buy.stripe.com/test_6oE3fAfo7d7M6as9AA'
         : '',
-    priceID: process.env.NODE_ENV === 'development' ?  process.env.MONTLHY_PRICE_ID : process.env.MONTLHY_PRICE_ID,
+    priceID:'price_1RDy8xGhJbEEzm6tUjztZ9LB'
   },
   {
     name: 'Anual',

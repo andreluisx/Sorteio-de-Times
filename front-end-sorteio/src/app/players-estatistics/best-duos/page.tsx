@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import BackgroundLayer from '@/components/ui/BackGroudLayer';
 import imagem from '@/constants/icons/duos.jpg';
+import { useUsersStore } from '@/store/user';
 
 type WinningDuo = {
   nomes: string[];
@@ -35,6 +36,7 @@ export default function WinningDuosLeaderboard() {
     totalPartidas: 0,
     duplas: [],
   });
+  const { checkUser, user, isLoading } = useUsersStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,8 +46,11 @@ export default function WinningDuosLeaderboard() {
     const fetchDuos = async () => {
       try {
         setLoading(true);
-        const response = await server.get('/match/best-duos'); // Adapte para sua rota real
-        setDuos(response.data);
+        checkUser();
+        if(user?.isPremium){
+          const response = await server.get('/match/best-duos'); 
+          setDuos(response.data);
+        }
         setLoading(false);
       } catch (err) {
         setError('Falha ao carregar as duplas vencedoras');
@@ -55,9 +60,9 @@ export default function WinningDuosLeaderboard() {
     };
 
     fetchDuos();
-  }, []);
+  }, [user?.isPremium]);
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="flex flex-col gap-2 w-full justify-center items-center h-screen bg-slate-900">
         <motion.div
@@ -110,7 +115,7 @@ export default function WinningDuosLeaderboard() {
 
   const filteredPlayers = duos.duplas.filter((dupla) => {
     const searchTermLower = searchTerm.trim().toLowerCase();
-    return dupla.nomes.some((nome) => 
+    return dupla.nomes.some((nome) =>
       nome.toLowerCase().includes(searchTermLower)
     );
   });
@@ -171,8 +176,8 @@ export default function WinningDuosLeaderboard() {
 
           <div className="flex items-center gap-4">
             <motion.button
-              whileHover={{ y: -2 }}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-lg shadow-lg border border-blue-500 transition-all"
+              disabled={!user?.isPremium}
+              className={`flex items-center gap-2 px-4 py-2 disabled:cursor-default cursor-pointer disabled:bg-slate-500 bg-blue-700 hover:bg-blue-600 text-white rounded-lg shadow-lg border border-blue-500 transition-all`}
             >
               <span>Baixar Relatório</span>
             </motion.button>
@@ -180,12 +185,23 @@ export default function WinningDuosLeaderboard() {
         </motion.div>
 
         {/* Main Content */}
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="relative flex flex-col lg:flex-row gap-8">
+          {!user?.isPremium && (
+            <>
+              <div className="absolute inset-0 backdrop-blur-md bg-black/30 z-50 rounded-lg" />
+              <div className="absolute inset-0 flex items-center justify-center z-50">
+                <button onClick={()=>{console.log('abrir premium modal')}} className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg text-lg animate-pulse transition duration-300">
+                  Seja Premium
+                </button>
+              </div>
+            </>
+          )}
+
           {/* Left Side - Podium */}
-          <div className="lg:w-1/2 flex flex-col overflow-hidden justify-between z-30 bg-slate-800/80 backdrop-blur-sm p-6 rounded-xl border border-slate-700 shadow-2xl">
+          <div className="lg:w-1/2 flex flex-col overflow-hidden justify-between z-40 bg-slate-800/80 backdrop-blur-sm p-6 rounded-xl border border-slate-700 shadow-2xl">
             <BackgroundLayer image={imagem} opacity={0.5} />
 
-            <div className="flex items-center justify-between mb-6 z-50">
+            <div className="flex items-center justify-between mb-6 z-30">
               <div className="flex gap-4 items-center">
                 <div className="flex gap-2 items-center">
                   <span className="text-gray-300 text-sm font-medium">
@@ -366,7 +382,6 @@ export default function WinningDuosLeaderboard() {
                       x: 0,
                       transition: { delay: index * 0.03 },
                     }}
-                    
                     transition={{ type: 'spring', stiffness: 300 }}
                     onMouseEnter={() => setIsHovering(index)}
                     onMouseLeave={() => setIsHovering(-1)}
@@ -456,14 +471,11 @@ export default function WinningDuosLeaderboard() {
                                 className="bg-gradient-to-r from-green-500 to-green-400 h-full rounded-full"
                                 style={{
                                   width: `${
-                                    (duo.vitorias /
-                                      (duo?.partidas || 1)) *
-                                    100
+                                    (duo.vitorias / (duo?.partidas || 1)) * 100
                                   }%`,
                                 }}
                               />
                             </div>
-                            
                           </div>
                         </div>
                       </div>

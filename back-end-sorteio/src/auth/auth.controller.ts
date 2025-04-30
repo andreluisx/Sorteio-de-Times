@@ -34,13 +34,11 @@ export class AuthController {
     return this.authService.checkAuth(tokenPayload);
   }
 
-  @UseGuards(AuthTokenGuard)
   @Patch('me')
   updateUser(
-    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
     @Body() updateUserDto: UpdateUserDto, 
   ){
-    return this.authService.update(tokenPayload.sub, updateUserDto)
+    return this.authService.update(updateUserDto)
   }
 
 }

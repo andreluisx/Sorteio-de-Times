@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UserData } from '@/types/account';
 import { CheckCircle, Crown, X } from 'lucide-react';
 import Checkout from '@/app/info/checkout/page';
+import CheckoutButton from '@/components/CheckoutButton';
 
 interface IPlans {
   name: string;
@@ -21,10 +22,6 @@ interface Props {
 
 export default function NotPremium({ plans, data }: Props) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  
-  const handleSelectPlan = async (priceId: string) => {
-    console.log(priceId)
-  };
   
   const closeCheckout = () => {
     setSelectedPlan(null);
@@ -76,9 +73,10 @@ export default function NotPremium({ plans, data }: Props) {
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={() => !plan.current && handleSelectPlan(plan.priceId)}
-                  disabled={plan.current}
+                <CheckoutButton
+                email={data.email}
+                priceId={plan.priceId}
+                  disabled={plan.current || false}
                   className={`flex justify-center items-center cursor-pointer w-full py-2 rounded-lg font-medium ${
                     plan.current 
                       ? 'cursor-default bg-slate-700 hover:bg-slate-600' 
@@ -86,9 +84,8 @@ export default function NotPremium({ plans, data }: Props) {
                         ? 'bg-red-600 hover:bg-red-700'
                         : 'bg-green-700  hover:bg-green-600'
                   }`}
-                >
-                  {plan.current ? 'Seu Plano' : 'Assinar'}
-                </button>
+                  placeHolder={plan.current ? 'Seu Plano' : 'Assinar'}
+                />
               </div>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -17,6 +18,8 @@ export class PlayersService {
   constructor(
     @InjectRepository(Players)
     private readonly playersRepository: Repository<Players>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async create(
@@ -24,16 +27,28 @@ export class PlayersService {
     tokenPayload: TokenPayloadDto,
   ) {
     const player = this.playersRepository.create(createPlayerDto);
-    const newPlayer = {
-      id: uuid(),
-      ...player,
-      winRate: player.winRate,
-      matchs: player.matchs,
-      rank: player.rank,
-      userId: tokenPayload.sub,
-    };
-    await this.playersRepository.save(newPlayer);
-    return newPlayer;
+    const numberOfPlayers = await this.playersRepository.count({
+      where: { userId: tokenPayload.sub },
+    });
+    const user = await this.userRepository.findOne({
+      where: { id: tokenPayload.sub },
+    });
+    if (numberOfPlayers < 10 || user.isPremium === true) {
+      const newPlayer = {
+        id: uuid(),
+        ...player,
+        winRate: player.winRate,
+        matchs: player.matchs,
+        rank: player.rank,
+        userId: tokenPayload.sub,
+      };
+      await this.playersRepository.save(newPlayer);
+      return newPlayer;
+    } else {
+      throw new ForbiddenException(
+        'Usuário deve ser premium para criar mais de 10 jogadores',
+      );
+    }
   }
 
   async findAll(filters: { userId: string; name?: string }) {
@@ -139,7 +154,7 @@ export class PlayersService {
     const allPlayers = await this.playersRepository.find({
       where: { userId: token.sub },
     });
-  
+
     const betterPlayers = allPlayers
       .map((player) => {
         const difference = Math.abs(player.idealStar - player.stars);
@@ -169,16 +184,15 @@ export class PlayersService {
         }
       })
       .slice(0, 10); // Retorna apenas os 10 melhores
-  
-      return { betterPlayers };
+
+    return { betterPlayers };
   }
-  
 
   async betterPlayers(token: TokenPayloadDto) {
     const allPlayers = await this.playersRepository.find({
       where: { userId: token.sub, deleted_at: null },
     });
-  
+
     const betterPlayers = allPlayers
       .sort((a, b) => {
         // Criando uma pontuação que combina win rate e número de partidas
@@ -202,32 +216,30 @@ export class PlayersService {
           matchs: player.matchs,
         };
       });
-  
+
     return { betterPlayers };
   }
 
   async ranking(token: TokenPayloadDto) {
     const allPlayers = await this.playersRepository.find({
       where: { userId: token.sub, deleted_at: null },
-      order: { points: 'DESC'}
+      order: { points: 'DESC' },
     });
-  
-    const betterPlayers = allPlayers
-      .slice(0, 10)
-      .map((player) => {
-        return {
-          id: player.id,
-          name: player.name,
-          stars: player.stars,
-          wins: player.wins,
-          loses: player.loses,
-          rank: player.rank,
-          winRate: Math.ceil(player.winRate),
-          matchs: player.matchs,
-          points: player.points,
-        };
-      });
-  
+
+    const betterPlayers = allPlayers.slice(0, 10).map((player) => {
+      return {
+        id: player.id,
+        name: player.name,
+        stars: player.stars,
+        wins: player.wins,
+        loses: player.loses,
+        rank: player.rank,
+        winRate: Math.ceil(player.winRate),
+        matchs: player.matchs,
+        points: player.points,
+      };
+    });
+
     return { betterPlayers };
   }
 }

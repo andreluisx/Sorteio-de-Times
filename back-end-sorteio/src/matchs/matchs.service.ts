@@ -16,6 +16,7 @@ import { ListService } from './list.service';
 import { BalancedTypes } from './utils/balanced-types.enum';
 import { v4 as uuid } from 'uuid';
 import { log } from 'mathjs'; // ou usa Math.log, depende do seu ambiente
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class MatchsService {
@@ -26,6 +27,8 @@ export class MatchsService {
     private teamPlayerRepository: Repository<TeamPlayer>,
     @InjectRepository(Players)
     private playersRepository: Repository<Players>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private readonly listService: ListService,
   ) {}
 
@@ -146,72 +149,79 @@ export class MatchsService {
   }
 
   async getTopDuplas(tokenPayloadDto: TokenPayloadDto) {
-    const matches = await this.matchsRepository.find({
-      where: { userId: tokenPayloadDto.sub },
-      order: { createdAt: 'desc' },
-      take: 40, // ✅ Limita as últimas 40
-      relations: ['teamPlayers', 'teamPlayers.player'],
-      select: {
-        id: true,
-        createdAt: true,
-        winner: true,
-        matchTime: true,
-        userId: true,
-      },
-    });
 
-    const duplaStatsMap = new Map<
-      string,
-      { nomes: string[]; vitorias: number; partidas: number }
-    >();
-
-    for (const match of matches) {
-      const winnerTeam = match.teamPlayers
-        .filter((tp) => tp.teamNumber === match.winner)
-        .map((tp) => tp.player?.name)
-        .filter(Boolean);
-
-      const allTeams = [1, 2].map((teamNumber) =>
-        match.teamPlayers
-          .filter((tp) => tp.teamNumber === teamNumber)
+    const user = await this.userRepository.findOne({where: {id: tokenPayloadDto.sub}})
+    if(user.isPremium === true){
+      const matches = await this.matchsRepository.find({
+        where: { userId: tokenPayloadDto.sub },
+        order: { createdAt: 'desc' },
+        take: 50,
+        relations: ['teamPlayers', 'teamPlayers.player'],
+        select: {
+          id: true,
+          createdAt: true,
+          winner: true,
+          matchTime: true,
+          userId: true,
+        },
+      });
+  
+      const duplaStatsMap = new Map<
+        string,
+        { nomes: string[]; vitorias: number; partidas: number }
+      >();
+  
+      for (const match of matches) {
+        const winnerTeam = match.teamPlayers
+          .filter((tp) => tp.teamNumber === match.winner)
           .map((tp) => tp.player?.name)
-          .filter(Boolean),
-      );
-
-      for (const team of allTeams) {
-        const duplas = await this.getDuplasFromNomes(team);
-        for (const dupla of duplas) {
-          const key = dupla.join('::');
-          if (!duplaStatsMap.has(key)) {
-            duplaStatsMap.set(key, { nomes: dupla, partidas: 0, vitorias: 0 });
+          .filter(Boolean);
+  
+        const allTeams = [1, 2].map((teamNumber) =>
+          match.teamPlayers
+            .filter((tp) => tp.teamNumber === teamNumber)
+            .map((tp) => tp.player?.name)
+            .filter(Boolean),
+        );
+  
+        for (const team of allTeams) {
+          const duplas = await this.getDuplasFromNomes(team);
+          for (const dupla of duplas) {
+            const key = dupla.join('::');
+            if (!duplaStatsMap.has(key)) {
+              duplaStatsMap.set(key, { nomes: dupla, partidas: 0, vitorias: 0 });
+            }
+            duplaStatsMap.get(key)!.partidas += 1;
           }
-          duplaStatsMap.get(key)!.partidas += 1;
+        }
+  
+        const duplasVencedoras = await this.getDuplasFromNomes(winnerTeam);
+        for (const dupla of duplasVencedoras) {
+          const key = dupla.join('::');
+          if (duplaStatsMap.has(key)) {
+            duplaStatsMap.get(key)!.vitorias += 1;
+          }
         }
       }
-
-      const duplasVencedoras = await this.getDuplasFromNomes(winnerTeam);
-      for (const dupla of duplasVencedoras) {
-        const key = dupla.join('::');
-        if (duplaStatsMap.has(key)) {
-          duplaStatsMap.get(key)!.vitorias += 1;
-        }
-      }
+  
+      const duplasOrdenadas = Array.from(duplaStatsMap.values())
+        .filter((d) => d.vitorias > 0) // ✅ só quem venceu pelo menos uma
+        .map((d) => ({
+          ...d,
+          winRate: d.vitorias / d.partidas,
+          score: (d.vitorias / d.partidas) * Math.log(d.partidas + 1), // ponderado
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 15);
+  
+      return {
+        totalPartidas: matches.length,
+        duplas: duplasOrdenadas,
+      };
+    }else{
+      return []
     }
-
-    const duplasOrdenadas = Array.from(duplaStatsMap.values())
-      .filter((d) => d.vitorias > 0) // ✅ só quem venceu pelo menos uma
-      .map((d) => ({
-        ...d,
-        winRate: d.vitorias / d.partidas,
-        score: (d.vitorias / d.partidas) * Math.log(d.partidas + 1), // ponderado
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 15);
-
-    return {
-      totalPartidas: matches.length,
-      duplas: duplasOrdenadas,
-    };
+    
   }
 
   async findOne(id: number) {

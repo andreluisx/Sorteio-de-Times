@@ -6,6 +6,7 @@ import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.share
 import { toast } from 'react-toastify';
 import { IMatchType } from '@/types/matchType';
 import { ResMatch } from './matchs';
+import { AxiosError } from 'axios';
 
 type PlayersState = {
   playersData: Player[];
@@ -159,9 +160,15 @@ export const usePlayersStore = create<PlayersState & PlayersActions>(
             ],
             isLoading: false,
           }));
-        } catch (error) {
-          console.error('Erro ao criar player:', error);
-          set({ error: 'Erro ao criar player', isLoading: false });
+        } catch (error: AxiosError) {
+          if(error.status === 403){
+            set({ error: 'Erro ao criar player' });
+            toast('Apenas usuários premium criam mais de 10 jogadores', {type: 'error'})
+          }else{
+            toast('Ocorreu um problema ao criar o jogador', {type: 'error'})
+          }
+        } finally {
+          set({isLoading: false})
         }
       },
 

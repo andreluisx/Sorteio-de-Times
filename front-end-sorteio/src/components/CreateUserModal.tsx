@@ -18,10 +18,20 @@ export default function CreateUserModal({ setModal }: ModalProps) {
 
   const { createPlayer } = usePlayersStore();
 
-  const handleCreateContinue = () => {
+  const handleCreate = (button: string) => {
     createPlayer(name, stars);
-    setStars(0);
-    setName('');
+    switch (button) {
+      case 'continue': 
+        setStars(0);
+        setName('');
+        break;
+      case 'close':
+        setModal(false);
+        break;
+      default:
+        setModal(false);
+    }
+    
   };
 
   const handleCreateClose = () => {
@@ -106,12 +116,12 @@ export default function CreateUserModal({ setModal }: ModalProps) {
           <div className="flex flex-col sm:flex-row gap-3 mt-auto">
             <GreenButton 
               placeHolder='Criar e Continuar' 
-              onClick={handleCreateContinue} 
+              onClick={()=>handleCreate('continue')} 
               disabled={disabledButton}
             />
             <GreenButton 
               placeHolder='Criar e Fechar' 
-              onClick={handleCreateClose} 
+              onClick={()=>handleCreate('close')} 
               disabled={disabledButton}
             />
           </div>
