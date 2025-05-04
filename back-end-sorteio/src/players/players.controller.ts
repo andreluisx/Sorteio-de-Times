@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PlayersService } from './players.service';
 import { CreatePlayerDto } from './dto/create-player.dto';
@@ -16,8 +17,10 @@ import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
 import { TokenPayloadParam } from 'src/params/token-payload.param';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 import { OwnershipGuard } from './guards/OwnershipGuard.guard';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @UseGuards(AuthTokenGuard)
+@UseInterceptors(CacheInterceptor)
 @Controller('players')
 export class PlayersController {
   constructor(private readonly playersService: PlayersService) {}
@@ -52,6 +55,8 @@ export class PlayersController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(10)
   findAll(
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
     @Query('name') name?: string, // Filtro por nome

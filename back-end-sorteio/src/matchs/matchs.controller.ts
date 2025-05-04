@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  Inject,
 } from '@nestjs/common';
 import { MatchsService } from './matchs.service';
 import { CreateMatchDto } from './dto/create-match.dto';
@@ -17,11 +19,18 @@ import { TokenPayloadParam } from 'src/params/token-payload.param';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 import { OwnershipGuard } from './guards/OwnershipGuard.guard';
 import { RandomMatchDto } from './dto/create-random-match.dto';
+import {
+  CacheInterceptor,
+  CacheTTL,
+} from '@nestjs/cache-manager';
 
+@UseInterceptors(CacheInterceptor)
 @UseGuards(AuthTokenGuard)
 @Controller('match')
 export class MatchsController {
-  constructor(private readonly matchsService: MatchsService) {}
+  constructor(
+    private readonly matchsService: MatchsService,
+  ) {}
 
   @Post()
   create(
@@ -32,12 +41,17 @@ export class MatchsController {
   }
 
   @Get()
+  @CacheTTL(10)
   findAll(
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
-    return this.matchsService.findAll(tokenPayloadDto, Number(page), Number(limit));
+    return this.matchsService.findAll(
+      tokenPayloadDto,
+      Number(page),
+      Number(limit),
+    );
   }
 
   @Get('best-duos')
@@ -111,6 +125,11 @@ export class MatchsController {
     @Query('limit') limit = 10,
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
   ) {
-    return this.matchsService.PlayerMatchs(id, tokenPayloadDto, Number(page), Number(limit));
+    return this.matchsService.PlayerMatchs(
+      id,
+      tokenPayloadDto,
+      Number(page),
+      Number(limit),
+    );
   }
 }

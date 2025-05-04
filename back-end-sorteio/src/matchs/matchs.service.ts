@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -17,6 +18,8 @@ import { BalancedTypes } from './utils/balanced-types.enum';
 import { v4 as uuid } from 'uuid';
 import { log } from 'mathjs'; // ou usa Math.log, depende do seu ambiente
 import { User } from 'src/auth/entities/user.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class MatchsService {
@@ -30,7 +33,12 @@ export class MatchsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly listService: ListService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  async cleanCache (){
+    await this.cacheManager.del('/matchs?page=1&limit=10');
+  }
 
   async create(
     createMatchDto: CreateMatchDto,
@@ -74,7 +82,7 @@ export class MatchsService {
       ...team1Associations,
       ...team2Associations,
     ]);
-
+    await this.cleanCache()
     return this.findOne(match.id);
   }
 
@@ -346,7 +354,7 @@ export class MatchsService {
           .where({ id: In(losers.map((p) => p.id)) })
           .execute(),
       ]);
-
+      await this.cleanCache()
       // 7. Recarrega TODOS os dados dos jogadores atualizados
       const updatedPlayers = await this.playersRepository.find({
         where: { id: In([...winners, ...losers].map((p) => p.id)) },
@@ -387,7 +395,7 @@ export class MatchsService {
     if (!match) {
       throw new NotFoundException('Partida não encontrada.');
     }
-
+    await this.cleanCache()
     return this.matchsRepository.remove(match);
   }
 
@@ -454,7 +462,7 @@ export class MatchsService {
           matchs: player.matchs,
         };
       });
-
+      await this.cleanCache()
       return {
         id: match.id,
         matchTime: match.matchTime,
@@ -537,7 +545,7 @@ export class MatchsService {
           matchs: player.matchs,
         };
       });
-
+      await this.cleanCache()
       return {
         id: match.id,
         matchTime: match.matchTime,
@@ -620,7 +628,7 @@ export class MatchsService {
           matchs: player.matchs,
         };
       });
-
+      await this.cleanCache()
       return {
         id: match.id,
         matchTime: match.matchTime,
@@ -703,7 +711,7 @@ export class MatchsService {
           matchs: player.matchs,
         };
       });
-
+      await this.cleanCache()
       return {
         id: match.id,
         matchTime: match.matchTime,

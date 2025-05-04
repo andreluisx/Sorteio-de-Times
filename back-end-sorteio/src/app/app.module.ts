@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppService } from './app.service';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 
@@ -9,12 +10,20 @@ import { Players } from 'src/players/entities/player.entity';
 import { PlayersModule } from 'src/players/players.module';
 import { MatchsModule } from 'src/matchs/matchs.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingCacheInterceptor } from 'src/interceptors/LoggingCacheInterceptor';
 
 @Module({
   imports: [
+    CacheModule.register({
+      ttl: 10000,
+      max: 10,
+      isGlobal: true,
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule.forFeature(appConfig)],
+
       inject: [appConfig.KEY],
       useFactory: async (appConfigurations: ConfigType<typeof appConfig>) => {
         return {
@@ -34,6 +43,12 @@ import { AuthModule } from 'src/auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingCacheInterceptor,
+    },
+  ],
 })
 export class AppModule {}

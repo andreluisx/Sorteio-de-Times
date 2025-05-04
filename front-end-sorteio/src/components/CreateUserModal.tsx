@@ -20,6 +20,7 @@ export default function CreateUserModal({ setModal }: ModalProps) {
 
   const handleCreate = (button: string) => {
     createPlayer(name, stars);
+    
     switch (button) {
       case 'continue': 
         setStars(0);
@@ -32,11 +33,6 @@ export default function CreateUserModal({ setModal }: ModalProps) {
         setModal(false);
     }
     
-  };
-
-  const handleCreateClose = () => {
-    createPlayer(name, stars);
-    setModal(false);
   };
 
   return (
